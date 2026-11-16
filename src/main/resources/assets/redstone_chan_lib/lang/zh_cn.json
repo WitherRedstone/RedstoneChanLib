@@ -1,2 +1,5 @@
 {
+  "itemGroup.redstone_chan_lib": "红石LIB",
+
+  "block.redstone_chan_lib.custom_portal": "自定义传送门"
 }

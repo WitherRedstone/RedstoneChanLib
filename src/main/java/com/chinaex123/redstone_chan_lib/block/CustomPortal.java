@@ -1,0 +1,136 @@
+package com.chinaex123.redstone_chan_lib.block;
+
+import com.chinaex123.redstone_chan_lib.client.portal.PortalClientHooks;
+import com.chinaex123.redstone_chan_lib.util.PortalTeleportManager;
+import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
+
+/**
+ * 自定义传送门方块。
+ * <p>
+ * 功能：
+ * 1. 拥有水平轴向属性（X 轴或 Z 轴），决定传送门的朝向；
+ * 2. 根据轴向提供不同的碰撞箱；
+ * 3. 实体进入方块时触发维度传送；
+ * 4. 声明传送门框架方块，供原版传送门机制识别。
+ */
+public class CustomPortal extends Block {
+
+    /** 传送门的水平轴向属性，只有 X 轴和 Z 轴两种取值 */
+    public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+
+    // 东西走向 - X轴
+    protected static final VoxelShape X_AXIS_AABB = Block.box(6.0D, 0.0D, 0.0D, 10.0D, 16.0D, 16.0D);
+    // 南北走向 - Z轴
+    protected static final VoxelShape Z_AXIS_AABB = Block.box(0.0D, 0.0D, 6.0D, 16.0D, 16.0D, 10.0D);
+
+    /**
+     * 构造自定义传送门方块。
+     * <p>
+     * 默认轴向设为 X 轴，实际放置时会由 getStateForPlacement 覆盖。
+     *
+     * @param properties 方块属性
+     */
+    public CustomPortal(Properties properties) {
+        super(properties.noOcclusion());
+        this.registerDefaultState(this.defaultBlockState().setValue(AXIS, Direction.Axis.X));
+    }
+
+    /**
+     * 创建方块状态定义，注册传送门方块使用的所有属性。
+     * <p>
+     * 此方法在方块初始化时被调用，用于声明 AXIS 属性，
+     * 以便方块状态可以存储朝向信息。
+     *
+     * @param builder 状态定义构建器，用于添加方块属性
+     */
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(AXIS);
+    }
+
+    /**
+     * 根据放置上下文设置传送门的初始状态。
+     * <p>
+     * 传送门的轴向会被设置为玩家朝向顺时针旋转 90 度后的方向，
+     * 这样传送门平面会正对玩家。
+     *
+     * @param context 方块放置上下文，包含玩家朝向等信息
+     * @return 设置好轴向的传送门方块状态
+     */
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(AXIS, context.getHorizontalDirection().getClockWise().getAxis());
+    }
+
+    /**
+     * 获取传送门方块的碰撞箱形状。
+     * <p>
+     * 根据传送门的轴向返回对应的 X 轴或 Z 轴方向的碰撞箱。
+     *
+     * @param state   方块状态
+     * @param world   世界访问器
+     * @param pos     方块位置
+     * @param context 碰撞上下文
+     * @return 对应轴向的碰撞箱形状
+     */
+    @Override
+    public @NotNull VoxelShape getShape(BlockState state, @NotNull BlockGetter world, @NotNull BlockPos pos, @NotNull CollisionContext context) {
+        return state.getValue(AXIS) == Direction.Axis.X ? X_AXIS_AABB : Z_AXIS_AABB;
+    }
+
+    /**
+     * 当实体进入传送门方块时的处理方法。
+     * <p>
+     * 检测玩家是否与传送门方块发生碰撞，如果是则触发维度传送。
+     * 只在服务端处理，避免客户端重复触发。
+     *
+     * @param state  方块状态
+     * @param level  世界对象
+     * @param pos    方块位置
+     * @param entity 进入方块的实体
+     */
+    @Override
+    public void entityInside(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Entity entity) {
+        if (entity instanceof ServerPlayer player && !level.isClientSide) {
+            if (player.getBoundingBox().intersects(pos.getX(), pos.getY(), pos.getZ(),
+                    pos.getX() + 1.0D, pos.getY() + 1.0D, pos.getZ() + 1.0D)) {
+                PortalTeleportManager.beginPortalTeleport(player, pos);
+            }
+        }
+        // 客户端调用钩子
+        if (entity instanceof ServerPlayer) {
+            PortalClientHooks.onPlayerInsidePortalClient();
+        }
+    }
+
+    /**
+     * 判断指定方块是否为传送门框架的一部分。
+     * <p>
+     * 此方法用于 Minecraft 原版传送门机制的兼容性检测，
+     * 这里把自定义石（NAUGHT_STONE）作为传送门框架方块。
+     *
+     * @param state 方块状态
+     * @param level 世界访问器
+     * @param pos   方块位置
+     * @return 如果是传送门框架方块返回 true，否则返回 false
+     */
+    @Override
+    public boolean isPortalFrame(BlockState state, @NotNull BlockGetter level, @NotNull BlockPos pos) {
+        return state.is(RCLBlocks.NAUGHT_STONE.get());
+    }
+}
