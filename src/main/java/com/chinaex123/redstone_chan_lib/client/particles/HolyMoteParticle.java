@@ -9,11 +9,33 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * 圣土光尘粒子。
+ * <p>
+ * 一种缓慢上升、带左右摇摆的光点粒子：使用精灵表逐帧动画，
+ * 初始轻微上浮并受极小负重力影响，前 15% 生命淡入、后 30% 淡出，
+ * 渲染类型为半透明粒子表。
+ */
 @OnlyIn(Dist.CLIENT)
 public class HolyMoteParticle extends TextureSheetParticle {
 
+    /** 粒子精灵表。 */
     private final SpriteSet sprites;
 
+    /**
+     * 构造圣土光尘粒子。
+     * <p>
+     * 初始化运动参数、生命周期、尺寸与颜色，并按年龄设置初始精灵。
+     *
+     * @param level    客户端世界
+     * @param x        X 坐标
+     * @param y        Y 坐标
+     * @param z        Z 坐标
+     * @param xSpeed   X 速度
+     * @param ySpeed   Y 速度
+     * @param zSpeed   Z 速度
+     * @param sprites  精灵表
+     */
     protected HolyMoteParticle(ClientLevel level, double x, double y, double z,
                                double xSpeed, double ySpeed, double zSpeed, SpriteSet sprites) {
         super(level, x, y, z, xSpeed, ySpeed, zSpeed);
@@ -39,6 +61,11 @@ public class HolyMoteParticle extends TextureSheetParticle {
         this.setSpriteFromAge(this.sprites);
     }
 
+    /**
+     * 每刻更新粒子。
+     * <p>
+     * 记录上一位置、更新精灵表动画，并施加左右摇摆与淡入淡出效果。
+     */
     @Override
     public void tick() {
         this.xo = this.x;
@@ -65,20 +92,49 @@ public class HolyMoteParticle extends TextureSheetParticle {
         this.alpha = Mth.clamp(this.alpha, 0.0F, 1.0F);
     }
 
+    /**
+     * 获取粒子渲染类型。
+     *
+     * @return 半透明粒子表渲染类型
+     */
     @Override
     public ParticleRenderType getRenderType() {
         return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
     }
 
+    /**
+     * 圣土光尘粒子提供器。
+     * <p>
+     * 根据简单粒子类型创建圣土光尘粒子。
+     */
     @OnlyIn(Dist.CLIENT)
     public static class Provider implements ParticleProvider<SimpleParticleType> {
 
+        /** 粒子精灵表。 */
         private final SpriteSet sprites;
 
+        /**
+         * 构造粒子提供器。
+         *
+         * @param sprites 精灵表
+         */
         public Provider(SpriteSet sprites) {
             this.sprites = sprites;
         }
 
+        /**
+         * 创建粒子。
+         *
+         * @param type     粒子类型
+         * @param level    客户端世界
+         * @param x        X 坐标
+         * @param y        Y 坐标
+         * @param z        Z 坐标
+         * @param xSpeed   X 速度
+         * @param ySpeed   Y 速度
+         * @param zSpeed   Z 速度
+         * @return 新创建的粒子
+         */
         @Nullable
         @Override
         public Particle createParticle(SimpleParticleType type, ClientLevel level,
@@ -88,6 +144,17 @@ public class HolyMoteParticle extends TextureSheetParticle {
         }
     }
 
+    /**
+     * 在指定位置生成一个圣土光尘粒子。
+     *
+     * @param level  客户端世界
+     * @param x      X 坐标
+     * @param y      Y 坐标
+     * @param z      Z 坐标
+     * @param xSpeed X 速度
+     * @param ySpeed Y 速度
+     * @param zSpeed Z 速度
+     */
     public static void spawn(ClientLevel level, double x, double y, double z,
                              double xSpeed, double ySpeed, double zSpeed) {
         level.addParticle(RCLParticles.HOLY_MOTE.get(), x, y, z, xSpeed, ySpeed, zSpeed);

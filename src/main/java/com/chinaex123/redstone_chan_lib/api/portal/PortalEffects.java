@@ -1,4 +1,4 @@
-package com.chinaex123.redstone_chan_lib.util;
+package com.chinaex123.redstone_chan_lib.api.portal;
 
 import com.chinaex123.redstone_chan_lib.block.CustomPortal;
 import net.minecraft.core.BlockPos;
@@ -12,19 +12,23 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * 跨维度定位 / 传送工具类。
+ * 传送门特效工具类。
  * <p>
- * 提供在目标维度查找或创建传送门，以及执行玩家跨维度传送的静态方法。
+ * 提供传送门点亮与到达时的音效与粒子表现：
+ * 点亮时播放末地传送门生成音效，并生成向内收缩粒子、漩涡粒子与中心吸引点；
+ * 到达时播放传送音效。
  */
-public final class PortalEffectHelper {
+public final class PortalEffects {
 
-    private PortalEffectHelper() {}
+    private PortalEffects() {}
 
     /**
-     * 播放传送门激活效果。
+     * 播放传送门激活特效。
+     * <p>
+     * 播放末地传送门生成音效并生成激活粒子。
      *
-     * @param level 所在维度
-     * @param pos   传送门位置
+     * @param level 世界
+     * @param pos   位置
      */
     public static void playActivationEffects(Level level, BlockPos pos) {
         level.playSound(null, pos, SoundEvents.END_PORTAL_SPAWN, SoundSource.BLOCKS, 1.0f, 1.0f);
@@ -33,9 +37,12 @@ public final class PortalEffectHelper {
 
     /**
      * 生成传送门激活粒子。
+     * <p>
+     * 仅服务端生效：生成向中心收缩的粒子、按传送门平面轴向分布的漩涡粒子，
+     * 以及中心的附魔命中粒子。
      *
-     * @param level 所在维度
-     * @param pos   传送门位置
+     * @param level 世界
+     * @param pos   位置
      */
     public static void spawnActivationParticles(Level level, BlockPos pos) {
         if (!(level instanceof ServerLevel serverLevel)) return;
@@ -94,10 +101,12 @@ public final class PortalEffectHelper {
     }
 
     /**
-     * 播放到达效果。
+     * 播放传送到达特效。
+     * <p>
+     * 在目标位置播放传送音效。
      *
      * @param player    到达的玩家
-     * @param targetPos 到达位置
+     * @param targetPos 目标位置
      */
     public static void playArrivalEffects(ServerPlayer player, BlockPos targetPos) {
         player.level().playSound(null, targetPos,

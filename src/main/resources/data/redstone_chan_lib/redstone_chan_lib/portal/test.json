@@ -1,0 +1,16 @@
+{
+  "frame_blocks": [
+    "minecraft:diamond_block"
+  ],
+  "catalyst": [
+    "item:minecraft:diamond",
+    "fluid:minecraft:water"
+  ],
+  "dimension": "minecraft:the_nether",
+  "name": "测试",
+  "min_width": 2,
+  "min_height": 3,
+  "max_width": 21,
+  "max_height": 21,
+  "wait_ticks": 80
+}

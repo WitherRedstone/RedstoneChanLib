@@ -1,5 +1,20 @@
 {
-  "itemGroup.redstone_chan_lib": "红石LIB",
+  "itemGroup.redstone_chan_lib": "红石工坊",
 
-  "block.redstone_chan_lib.custom_portal": "自定义传送门"
+  "block.redstone_chan_lib.custom_portal": "自定义传送门",
+
+  "portal.redstone_chan_lib.test": "测试",
+
+  "message.redstone_chan_lib.unknown_item": "未知的物品：%s",
+  "message.redstone_chan_lib.unknown_fluid": "未知的流体：%s",
+  "message.redstone_chan_lib.unknown_block": "未知的方块：%s",
+  "message.redstone_chan_lib.missing_catalyst_id": "激活方式缺少 id：%s",
+  "message.redstone_chan_lib.invalid_color": "非法颜色值 %s，应为 #RRGGBB 或 #AARRGGBB",
+  "message.redstone_chan_lib.invalid_orientation": "未知的传送门摆放类型：%s",
+  "message.redstone_chan_lib.definition_without_frame": "传送门定义 %s 没有任何外围方块",
+  "message.redstone_chan_lib.ritual_size_too_small": "仪式空位至少要有 1×1",
+  "message.redstone_chan_lib.ritual_without_fluid": "仪式式传送门必须指定空位里的流体",
+  "message.redstone_chan_lib.definition_parse_failed": "无法解析传送门定义 %s，已跳过",
+  "message.redstone_chan_lib.definitions_loaded": "已加载 %s 个数据包传送门定义",
+  "message.redstone_chan_lib.ritual_activated": "仪式式传送门 %s 已在 %s 激活"
 }

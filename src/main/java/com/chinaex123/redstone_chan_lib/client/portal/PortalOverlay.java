@@ -1,6 +1,6 @@
 package com.chinaex123.redstone_chan_lib.client.portal;
 
-import com.chinaex123.redstone_chan_lib.RedstonechanLIB;
+import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 
 /**
- * 虚空传送门屏幕叠加层。
+ * 自定义传送门屏幕叠加层。
  * <p>
  * 在玩家进入传送门时，于屏幕最上层绘制一层逐渐增强的传送门贴图，
  * 用于模拟传送门的视觉覆盖效果。绘制强度由客户端状态计时器决定。
@@ -31,7 +31,7 @@ public final class PortalOverlay {
      * @param event GUI 图层注册事件
      */
     public static void register(RegisterGuiLayersEvent event) {
-        event.registerAboveAll(RedstonechanLIB.id("portal_overlay"),
+        event.registerAboveAll(RedstoneChanLIB.id("portal_overlay"),
                 (graphics, deltaTracker) -> render(graphics)
         );
     }

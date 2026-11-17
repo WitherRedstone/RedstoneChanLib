@@ -1,0 +1,20 @@
+{
+  "itemGroup.redstone_chan_lib": "Redstone LIB",
+
+  "block.redstone_chan_lib.custom_portal": "Custom Portal",
+
+  "portal.redstone_chan_lib.test": "Test",
+
+  "message.redstone_chan_lib.unknown_item": "Unknown item: %s",
+  "message.redstone_chan_lib.unknown_fluid": "Unknown fluid: %s",
+  "message.redstone_chan_lib.unknown_block": "Unknown block: %s",
+  "message.redstone_chan_lib.missing_catalyst_id": "Catalyst entry has no id: %s",
+  "message.redstone_chan_lib.invalid_color": "Invalid color %s, expected #RRGGBB or #AARRGGBB",
+  "message.redstone_chan_lib.invalid_orientation": "Unknown portal orientation: %s",
+  "message.redstone_chan_lib.definition_without_frame": "Portal definition %s has no frame blocks",
+  "message.redstone_chan_lib.ritual_size_too_small": "The ritual area must be at least 1x1",
+  "message.redstone_chan_lib.ritual_without_fluid": "Ritual portals must specify the fluid in the area",
+  "message.redstone_chan_lib.definition_parse_failed": "Failed to parse portal definition %s, skipped",
+  "message.redstone_chan_lib.definitions_loaded": "Loaded %s datapack portal definitions",
+  "message.redstone_chan_lib.ritual_activated": "Ritual portal %s activated at %s"
+}

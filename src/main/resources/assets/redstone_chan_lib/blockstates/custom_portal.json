@@ -1,10 +1,13 @@
 {
   "variants": {
     "axis=x": {
-      "model": "void_dimension:block/void_portal_ew"
+      "model": "redstone_chan_lib:block/custom_portal_ew"
+    },
+    "axis=y": {
+      "model": "redstone_chan_lib:block/custom_portal_flat"
     },
     "axis=z": {
-      "model": "void_dimension:block/void_portal_ns"
+      "model": "redstone_chan_lib:block/custom_portal_ns"
     }
   }
 }

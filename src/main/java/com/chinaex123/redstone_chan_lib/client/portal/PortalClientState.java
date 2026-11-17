@@ -4,7 +4,7 @@ package com.chinaex123.redstone_chan_lib.client.portal;
 import com.chinaex123.redstone_chan_lib.util.PortalTeleportManager;
 
 /**
- * 虚空传送门客户端状态。
+ * 自定义传送门客户端状态。
  * <p>
  * 记录玩家当前是否处于传送门内，以及传送门进度计时器，
  * 用于计算并驱动客户端侧的传送门视觉效果强度。
