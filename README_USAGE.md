@@ -126,7 +126,7 @@
 
 ## Java API
 
-- 对外公开的 API 全部放在 `com.chinaex123.redstone_chan_lib.api.portal` 包里，一共十三个类：`PortalDefinition`（定义）、`PortalCatalyst`（激活方式）、`PortalRitual`（仪式配置）、`PortalDefinitions`（注册表）、`PortalShape`（形状判定）、`PortalOrientation`（摆放类型）、`PortalStructureHelper`（摆放与拆除）、`PortalPlacement`（跨维度定位）、`PortalTeleport`（传送执行）、`PortalActivation`（激活流程）、`PortalRitualActivation`（仪式激活流程）、`PortalEffects`（特效与音效）、`PortalTexts`（提示文案）。包的说明见同目录的 `package-info.java`。
+- 对外公开的 API 分两个包。传送门相关的在 `com.chinaex123.redstone_chan_lib.api.portal`，一共十二个类：`PortalDefinition`（定义）、`PortalCatalyst`（激活方式）、`PortalRitual`（仪式配置）、`PortalDefinitions`（注册表）、`PortalShape`（形状判定）、`PortalOrientation`（摆放类型）、`PortalStructureHelper`（摆放与拆除）、`PortalPlacement`（跨维度定位）、`PortalTeleport`（传送执行）、`PortalActivation`（激活流程）、`PortalRitualActivation`（仪式激活流程）、`PortalEffects`（特效与音效）；提示文案工具 `com.chinaex123.redstone_chan_lib.util.PortalTexts` 也在公开范围内。生物描边在 `com.chinaex123.redstone_chan_lib.api.outline`，只有一个 `EntityOutline`。包的说明见各自目录下的 `package-info.java`。
 - 这不是另写的一份“给外部用”的实现：模组自己的右键点亮、破坏拆门、传送倒计时、遮挡遮罩，调用的就是这些类里的同一批方法。所以外部模组调 `PortalActivation.tryActivate(...)` 得到的效果，和玩家自己右键点亮的完全一致。
 - 附属模组或整合包脚本可以在模组构造阶段注册内置定义。下面示例用到的 import：
 
@@ -279,13 +279,80 @@ PortalDefinitions.register(
 - `PortalTexts.component(String key, Object... args)`：取文本组件，方便塞进界面或提示里。
 - 键统一以 `message.redstone_chan_lib.` 开头（`PortalTexts.PREFIX`），写在模组自己的语言文件里，其它模组或整合包也可以覆盖同名键来改写提示。
 
+生物描边 `EntityOutline`：
+
+- `apply(Entity entity, Mode mode)`：按模式加描边，发光与高光用默认白色，黑色模式用黑色。
+- `apply(Entity entity, Mode mode, int rgb)`：同上并指定颜色，只取低 24 位。
+- `apply(Entity entity, Mode mode, int rgb, Style style)`：同上并指定纯色 `Style.SOLID` 或彩色 `Style.RAINBOW`，粗细用默认值 `EntityOutline.DEFAULT_THICKNESS`（0.08 格）。
+- `apply(Entity entity, Mode mode, int rgb, Style style, double thickness)`：再加上粗细，单位是方块，意思是轮廓最多向外鼓出多少格；越大约粗，黑色模式会自动收窄到八成，看起来更像描边而不是外发光。
+- `apply(Entity entity, Mode mode, int rgb, Style style, double thickness, boolean throughWalls)`：再加一个“是否穿透方块”。`true` 时生物躲在墙后面也能看见描边（默认值 `EntityOutline.DEFAULT_THROUGH_WALLS`），`false` 时从玩家眼睛到生物的连线被方块挡住就不画这只生物的描边。
+- `clear(Entity entity)`：取消某只生物的描边。
+- `clearAll()`：取消所有描边。
+- `isActive(Entity entity)`：这只生物当前是否有描边。
+- `get(Entity entity)`：取当前的描边设置（`Outline` 记录，含模式、颜色、纯色/彩色、粗细、是否穿透方块），没有则返回 `null`。
+- `activeEntities()`：当前所有带描边的生物。
+- `defaultColor(Mode mode)`：某种模式的默认颜色。
+- 模式是 `EntityOutline.Mode` 的三个值 `GLOW`（发光）、`BLACK`（黑色）、`HIGHLIGHT`（高光）；纯色/彩色是 `EntityOutline.Style` 的 `SOLID`、`RAINBOW`；彩色不是整只生物一起换色，而是按屏幕位置铺开色相，所以同一瞬间这圈光晕上就有红、黄、绿、蓝，而且会随时间缓慢流动。
+
+## 生物描边（Java 调用）
+
+描边本身只影响画面，不改实体属性；但“谁身上有描边”这件事是记在服务端存档里的，所以**推荐在服务端调用**：
+服务端调用会写进存档、并把设置同步给所有能看到这只生物的玩家，玩家退出重进、区块重新加载之后描边还在。
+在客户端调用只对当前这一次游戏有效，重进就没了，适合纯本地的视觉效果。
+
+下面示例用到的 import：
+
+```java
+import com.chinaex123.redstone_chan_lib.api.outline.EntityOutline;
+import net.minecraft.world.entity.Entity;
+```
+
+给一只生物加上描边：
+
+```java
+// 发光描边，默认白色
+EntityOutline.apply(entity, EntityOutline.Mode.GLOW);
+// 发光描边，自定义颜色（纯色）
+EntityOutline.apply(entity, EntityOutline.Mode.GLOW, 0xFF7CF9FF);
+// 发光描边，彩色（颜色沿着轮廓铺开，同一时刻就能看到好几种颜色）
+EntityOutline.apply(entity, EntityOutline.Mode.GLOW, 0xFFFFFFFF, EntityOutline.Style.RAINBOW);
+// 发光描边，并指定粗细（单位是方块，0.08 是默认值，写大一点就更粗）
+EntityOutline.apply(entity, EntityOutline.Mode.GLOW, 0xFF7CF9FF, EntityOutline.Style.SOLID, 0.3);
+// 发光描边，粗细 0.3，并且被方块挡住时不画（最后一个参数是“是否穿透方块”）
+EntityOutline.apply(entity, EntityOutline.Mode.GLOW, 0xFF7CF9FF, EntityOutline.Style.SOLID, 0.3, false);
+// 黑色描边
+EntityOutline.apply(entity, EntityOutline.Mode.BLACK);
+// 高光效果
+EntityOutline.apply(entity, EntityOutline.Mode.HIGHLIGHT);
+// 取消
+EntityOutline.clear(entity);
+```
+
+几点说明：
+
+- 同一个实体重复调用会覆盖之前的设置，所以换颜色、换模式都直接再调一次 `apply` 即可
+- 在服务端调用时，设置会写进世界存档（`redstone_chan_lib_outlines`），并在生物进入玩家视野时自动补发一次，所以退出重进、换维度回来都还在；在客户端调用只存在内存里，重进就没了
+- 描边是按实体记录的，实体被移除后对应的记录会自动失效；`EntityOutline.clearAll()` 只清掉当前客户端画面上的描边，不动存档
+- 只有活体（`LivingEntity`）会被渲染出来，其它实体加了也没有效果
+- 颜色只取低 24 位（R、G、B），透明度由描边的渲染类型固定
+- 粗细默认 0.08 格，换算成屏幕像素是“一格 = 100 像素”，所以默认约 8 像素；这个粗细是**固定的**，不随生物远近、视角高低变化，最多夹在 3~32 像素之间。想要更粗就调大 `thickness`
+- 模组自带一个测试入口：对着生物按 `K`，依次切换“发光（青色）→ 发光（彩色）→ 黑色 → 高光 → 发光（青色，被挡住就不画）→ 取消”，动作栏会提示当前模式。按 `K` 的切换是发给服务端做的，所以设完之后退出重进也还在，可以顺便验证持久化
+
 ## 实现说明
+
 
 - 传送门方块本体只有朝向属性，颜色、名称与所属定义都存在方块实体 `PortalBlockEntity` 里，因此同一种方块可以同时属于多个传送门而不冲突
 - 朝向属性用的是 `axis`，取值 `x`、`y`、`z`：`x`/`z` 是竖直的门，`y` 是平铺在地面的横门。横门的贴图与形状都是悬在方块中间的一层薄片（7/16 到 9/16），正好落在框架的腰线上；判定传送靠的是方块格本身，与形状无关
 - 形状判定把所有朝向统一成“平面内的横向 u 与纵向 v”，所以竖门与横门走的是同一套洪水填充逻辑，只是 u、v 映射到的世界坐标轴不同
 - 颜色通过方块染色回调实现，模型面写了 `tintindex`。染色是乘法叠在贴图上，所以传送门贴图本身是灰度图（亮度取自原来的紫色贴图），颜色完全由 `color` 决定，想变成红色就是红色，不会在紫色上再叠一层；默认的紫色 `#730DFF` 就是原版下界门那种紫，也是这么染出来的。染色只用到 R、G、B 三个通道，A 通道不参与渲染，透明度始终来自贴图本身。整座门（包括破坏粒子）只用这一张灰度贴图，所以粒子也会跟着染色走
 - 流体激活读的是物品的流体能力，不看物品 id，所以原版桶和附属模组的储罐都能被同一条定义识别；点亮后会从容器里抽走一桶，水桶因此变成空桶
+- 生物描边走的是原版发光效果那套“屏幕空间”思路：先在离屏缓冲里把这只生物画成一张纯色剪影，再把这张剪影按一圈圈像素偏移叠回画面，越外圈越淡。因为是在本体之前叠上去的，本体随后会把中间盖掉，只剩贴着轮廓的一圈光晕
+- 剪影用的是原版的描边着色器（`rendertype_outline`）：它按模型贴图的 alpha 丢弃完全透明的像素，所以只有真正看得见的面才会进入剪影，模型上透明的装饰面（比如监守者身上那几块发光方片）不会在描边上留下色块；顶点颜色固定写成白色，真正的描边颜色在合成阶段决定
+- 剪影只收“本体皮肤”那一层（用这只生物自己贴图的那几种渲染类型），透明层、附加发光层、眼睛层一律丢掉，所以额外渲染层不会影响描边形状，和原版发光只取外形是一致的
+- 彩色风格是把色相按屏幕坐标铺开：同一瞬间这圈光晕上就能看到好几种颜色，并且随时间缓慢流动，不是整只生物一起换色
+- 光晕厚度是**固定的屏幕像素**：粗细（格）乘 100，再夹在 3~32 像素之间。之前试过按生物屏幕大小换算，贴脸往下看时透视会把半径放大得离谱、远处又会缩成一条细线，所以干脆固定成像素值，任何视角看起来都一样粗
+- 遮罩贴图的环绕方式被设成“夹到边缘”：合成时是按偏移若干像素去采样遮罩的，屏幕边缘那部分会采到贴图外面，若保持默认的重复环绕就会把对边的剪影卷回来，画面上出现一圈莫名其妙的光环
+- `throughWalls` 为 `false` 时，画之前先做一次可见性检查（先查方块，再查其它生物的碰撞箱），被地形或别的生物挡住就整只不画；为 `true` 时不管挡不挡都画，和原版发光一致
 - 形状判定分两步：先从被点击的框架方块旁边找一个内部空格，在传送门所在的平面里做四向洪水填充，把内部整块圈出来；再检查这块区域是完整矩形，且它外面那一圈（四条边）都是框架方块。四个角允许留空，和原版下界门一致，判定的只是四条边是否把内部封住
 - 因为判定看的是“内部空格有没有被封住”，框架和同材质的墙、地板连成一片也不会误判；但内部不能有缺口，否则空气会漏到外面，门点不着
 - 传送门方块在生存模式下不可破坏，创造模式破坏它会拆掉整座门；拆掉真正的外圈框架方块也会让整座门消失，拆除时每一格都会播放破坏音效。拆分时会先用相邻的传送门方块反推出整座门的范围，确认被拆的方块确实落在外圈四条边上才动手，所以门旁边随手放的同材质方块拆掉不会影响门

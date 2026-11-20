@@ -16,5 +16,19 @@
   "message.redstone_chan_lib.ritual_without_fluid": "Ritual portals must specify the fluid in the area",
   "message.redstone_chan_lib.definition_parse_failed": "Failed to parse portal definition %s, skipped",
   "message.redstone_chan_lib.definitions_loaded": "Loaded %s datapack portal definitions",
-  "message.redstone_chan_lib.ritual_activated": "Ritual portal %s activated at %s"
+  "message.redstone_chan_lib.ritual_activated": "Ritual portal %s activated at %s",
+
+  "key.categories.redstone_chan_lib": "Redstone LIB",
+  "key.redstone_chan_lib.outline_demo": "Cycle Entity Outline (Test)",
+
+  "message.redstone_chan_lib.outline_no_target": "No living entity in sight",
+  "message.redstone_chan_lib.outline_glow": "Outline: glow (cyan)",
+  "message.redstone_chan_lib.outline_glow_rainbow": "Outline: glow (rainbow)",
+  "message.redstone_chan_lib.outline_black": "Outline: black",
+  "message.redstone_chan_lib.outline_highlight": "Outline: highlight",
+  "message.redstone_chan_lib.outline_glow_blocked": "Outline: glow (cyan, hidden behind blocks)",
+  "message.redstone_chan_lib.outline_cleared": "Outline: cleared",
+  "message.redstone_chan_lib.outline_null_target": "Outline target entity must not be null",
+  "message.redstone_chan_lib.outline_null_mode": "Outline mode must not be null",
+  "message.redstone_chan_lib.outline_invalid_thickness": "Outline thickness must be greater than 0, got %s"
 }

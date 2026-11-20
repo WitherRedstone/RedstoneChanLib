@@ -16,5 +16,19 @@
   "message.redstone_chan_lib.ritual_without_fluid": "仪式式传送门必须指定空位里的流体",
   "message.redstone_chan_lib.definition_parse_failed": "无法解析传送门定义 %s，已跳过",
   "message.redstone_chan_lib.definitions_loaded": "已加载 %s 个数据包传送门定义",
-  "message.redstone_chan_lib.ritual_activated": "仪式式传送门 %s 已在 %s 激活"
+  "message.redstone_chan_lib.ritual_activated": "仪式式传送门 %s 已在 %s 激活",
+
+  "key.categories.redstone_chan_lib": "红石工坊",
+  "key.redstone_chan_lib.outline_demo": "切换生物描边（测试）",
+
+  "message.redstone_chan_lib.outline_no_target": "没有对着生物",
+  "message.redstone_chan_lib.outline_glow": "描边：发光（青色）",
+  "message.redstone_chan_lib.outline_glow_rainbow": "描边：发光（彩色）",
+  "message.redstone_chan_lib.outline_black": "描边：黑色",
+  "message.redstone_chan_lib.outline_highlight": "描边：高光",
+  "message.redstone_chan_lib.outline_glow_blocked": "描边：发光（青色，被挡住就不画）",
+  "message.redstone_chan_lib.outline_cleared": "描边：已取消",
+  "message.redstone_chan_lib.outline_null_target": "描边的目标实体不能为空",
+  "message.redstone_chan_lib.outline_null_mode": "描边模式不能为空",
+  "message.redstone_chan_lib.outline_invalid_thickness": "描边粗细必须大于 0，当前为 %s"
 }
