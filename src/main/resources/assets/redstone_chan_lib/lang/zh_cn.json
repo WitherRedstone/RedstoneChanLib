@@ -1,10 +1,7 @@
 {
   "itemGroup.redstone_chan_lib": "红石工坊",
-
   "block.redstone_chan_lib.custom_portal": "自定义传送门",
-
   "portal.redstone_chan_lib.test": "测试",
-
   "message.redstone_chan_lib.unknown_item": "未知的物品：%s",
   "message.redstone_chan_lib.unknown_fluid": "未知的流体：%s",
   "message.redstone_chan_lib.unknown_block": "未知的方块：%s",
@@ -17,10 +14,8 @@
   "message.redstone_chan_lib.definition_parse_failed": "无法解析传送门定义 %s，已跳过",
   "message.redstone_chan_lib.definitions_loaded": "已加载 %s 个数据包传送门定义",
   "message.redstone_chan_lib.ritual_activated": "仪式式传送门 %s 已在 %s 激活",
-
   "key.categories.redstone_chan_lib": "红石工坊",
   "key.redstone_chan_lib.outline_demo": "切换生物描边（测试）",
-
   "message.redstone_chan_lib.outline_no_target": "没有对着生物",
   "message.redstone_chan_lib.outline_glow": "描边：发光（青色）",
   "message.redstone_chan_lib.outline_glow_rainbow": "描边：发光（彩色）",
@@ -28,7 +23,25 @@
   "message.redstone_chan_lib.outline_highlight": "描边：高光",
   "message.redstone_chan_lib.outline_glow_blocked": "描边：发光（青色，被挡住就不画）",
   "message.redstone_chan_lib.outline_cleared": "描边：已取消",
-  "message.redstone_chan_lib.outline_null_target": "描边的目标实体不能为空",
+  "message.redstone_chan_lib.outline_null_target": "扫描目标不能为空",
   "message.redstone_chan_lib.outline_null_mode": "描边模式不能为空",
-  "message.redstone_chan_lib.outline_invalid_thickness": "描边粗细必须大于 0，当前为 %s"
+  "message.redstone_chan_lib.outline_invalid_thickness": "描边粗细必须大于 0，当前为 %s",
+  "message.redstone_chan_lib.block_outline_glow": "方块描边：发光",
+  "message.redstone_chan_lib.block_outline_glow_rainbow": "方块描边：发光（彩色）",
+  "message.redstone_chan_lib.block_outline_black": "方块描边：黑色",
+  "message.redstone_chan_lib.block_outline_highlight": "方块描边：高光",
+  "message.redstone_chan_lib.block_outline_create": "方块描边：机械动力风格",
+  "message.redstone_chan_lib.block_outline_create_keep": "方块描边：机械动力风格（一直显示）",
+  "message.redstone_chan_lib.block_outline_wire": "方块描边：线框",
+  "message.redstone_chan_lib.block_outline_wire_rainbow": "方块描边：线框（彩色）",
+  "message.redstone_chan_lib.block_outline_cleared": "方块描边：已取消",
+  "message.redstone_chan_lib.outline_null_level": "描边所在的维度不能为空",
+  "message.redstone_chan_lib.outline_null_pos": "描边的方块位置不能为空",
+  "key.redstone_chan_lib.scan_demo": "扫描周围矿石（测试）",
+  "message.redstone_chan_lib.scan_demo_on": "扫描：显示周围矿石",
+  "message.redstone_chan_lib.scan_demo_off": "扫描：已关闭",
+  "key.redstone_chan_lib.entity_scan_demo": "实体扫描高亮（演示）",
+  "message.redstone_chan_lib.entity_scan_on": "实体扫描：%s",
+  "message.redstone_chan_lib.entity_scan_off": "实体扫描：已关闭",
+  "message.redstone_chan_lib.entity_scan_no_target": "实体扫描：准星没有对着实体"
 }

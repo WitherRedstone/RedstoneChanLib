@@ -1,10 +1,7 @@
 {
   "itemGroup.redstone_chan_lib": "Redstone LIB",
-
   "block.redstone_chan_lib.custom_portal": "Custom Portal",
-
   "portal.redstone_chan_lib.test": "Test",
-
   "message.redstone_chan_lib.unknown_item": "Unknown item: %s",
   "message.redstone_chan_lib.unknown_fluid": "Unknown fluid: %s",
   "message.redstone_chan_lib.unknown_block": "Unknown block: %s",
@@ -17,10 +14,8 @@
   "message.redstone_chan_lib.definition_parse_failed": "Failed to parse portal definition %s, skipped",
   "message.redstone_chan_lib.definitions_loaded": "Loaded %s datapack portal definitions",
   "message.redstone_chan_lib.ritual_activated": "Ritual portal %s activated at %s",
-
   "key.categories.redstone_chan_lib": "Redstone LIB",
   "key.redstone_chan_lib.outline_demo": "Cycle Entity Outline (Test)",
-
   "message.redstone_chan_lib.outline_no_target": "No living entity in sight",
   "message.redstone_chan_lib.outline_glow": "Outline: glow (cyan)",
   "message.redstone_chan_lib.outline_glow_rainbow": "Outline: glow (rainbow)",
@@ -28,7 +23,25 @@
   "message.redstone_chan_lib.outline_highlight": "Outline: highlight",
   "message.redstone_chan_lib.outline_glow_blocked": "Outline: glow (cyan, hidden behind blocks)",
   "message.redstone_chan_lib.outline_cleared": "Outline: cleared",
-  "message.redstone_chan_lib.outline_null_target": "Outline target entity must not be null",
+  "message.redstone_chan_lib.outline_null_target": "Scan target must not be null",
   "message.redstone_chan_lib.outline_null_mode": "Outline mode must not be null",
-  "message.redstone_chan_lib.outline_invalid_thickness": "Outline thickness must be greater than 0, got %s"
+  "message.redstone_chan_lib.outline_invalid_thickness": "Outline thickness must be greater than 0, got %s",
+  "message.redstone_chan_lib.block_outline_glow": "Block outline: glow",
+  "message.redstone_chan_lib.block_outline_glow_rainbow": "Block outline: glow (rainbow)",
+  "message.redstone_chan_lib.block_outline_black": "Block outline: black",
+  "message.redstone_chan_lib.block_outline_highlight": "Block outline: highlight",
+  "message.redstone_chan_lib.block_outline_create": "Block outline: Create style",
+  "message.redstone_chan_lib.block_outline_create_keep": "Block outline: Create style (always on)",
+  "message.redstone_chan_lib.block_outline_wire": "Block outline: wireframe",
+  "message.redstone_chan_lib.block_outline_wire_rainbow": "Block outline: wireframe (rainbow)",
+  "message.redstone_chan_lib.block_outline_cleared": "Block outline: cleared",
+  "message.redstone_chan_lib.outline_null_level": "Outline level must not be null",
+  "message.redstone_chan_lib.outline_null_pos": "Outline block position must not be null",
+  "key.redstone_chan_lib.scan_demo": "Scan nearby ores (test)",
+  "message.redstone_chan_lib.scan_demo_on": "Scan: showing nearby ores",
+  "message.redstone_chan_lib.scan_demo_off": "Scan: off",
+  "key.redstone_chan_lib.entity_scan_demo": "Entity scan outline (demo)",
+  "message.redstone_chan_lib.entity_scan_on": "Entity scan: %s",
+  "message.redstone_chan_lib.entity_scan_off": "Entity scan: off",
+  "message.redstone_chan_lib.entity_scan_no_target": "Entity scan: no entity in sight"
 }
