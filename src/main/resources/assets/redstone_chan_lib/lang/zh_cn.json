@@ -43,5 +43,9 @@
   "key.redstone_chan_lib.entity_scan_demo": "实体扫描高亮（演示）",
   "message.redstone_chan_lib.entity_scan_on": "实体扫描：%s",
   "message.redstone_chan_lib.entity_scan_off": "实体扫描：已关闭",
-  "message.redstone_chan_lib.entity_scan_no_target": "实体扫描：准星没有对着实体"
+  "message.redstone_chan_lib.entity_scan_no_target": "实体扫描：准星没有对着实体",
+  "message.redstone_chan_lib.creative_tab.shift_hint": "按住 Shift 可多选分区",
+  "creative_tab.redstone_chan_lib.materials": "材料",
+  "creative_tab.redstone_chan_lib.ores": "矿物",
+  "creative_tab.redstone_chan_lib.blocks": "方块"
 }

@@ -2,8 +2,6 @@ package com.chinaex123.redstone_chan_lib.client.outline;
 
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
 import com.chinaex123.redstone_chan_lib.api.outline.EntityScanOutline;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.entity.Entity;
@@ -15,6 +13,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 实体扫描高亮的客户端渲染。

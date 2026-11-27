@@ -11,20 +11,16 @@ import com.chinaex123.redstone_chan_lib.world.BlockOutlineSavedData;
 import com.chinaex123.redstone_chan_lib.world.BlockScanSavedData;
 import com.chinaex123.redstone_chan_lib.world.EntityScanSavedData;
 import com.chinaex123.redstone_chan_lib.world.OutlineSavedData;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.phys.*;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -35,6 +31,9 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 实体描边网络处理。
@@ -50,6 +49,9 @@ public final class OutlineNetwork {
     private static final int CYCLE_STATES = 6;
     /** 测试入口的选目标距离 */
     private static final double PICK_DISTANCE = 24.0D;
+
+    /** 测试入口的扫描半径 */
+    private static final int SCAN_DEMO_RADIUS = 16;
 
     private OutlineNetwork() {
     }
@@ -67,6 +69,8 @@ public final class OutlineNetwork {
         registrar.playToClient(BlockScanSyncPayload.TYPE, BlockScanSyncPayload.STREAM_CODEC, OutlineNetwork::handleScanSync);
         registrar.playToClient(EntityScanSyncPayload.TYPE, EntityScanSyncPayload.STREAM_CODEC, OutlineNetwork::handleEntityScanSync);
         registrar.playToServer(OutlineCyclePayload.TYPE, OutlineCyclePayload.STREAM_CODEC, OutlineNetwork::handleCycle);
+        registrar.playToServer(OutlineResyncPayload.TYPE, OutlineResyncPayload.STREAM_CODEC, OutlineNetwork::handleResync);
+        registrar.playToServer(ScanTogglePayload.TYPE, ScanTogglePayload.STREAM_CODEC, OutlineNetwork::handleScanToggle);
     }
 
     /**
@@ -76,20 +80,8 @@ public final class OutlineNetwork {
      */
     @SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
-            return;
-        }
-        for (Map.Entry<BlockPos, BlockOutline.Outline> entry : BlockOutlineSavedData.get(level).all().entrySet()) {
-            PacketDistributor.sendToPlayer(player, BlockOutlineSyncPayload.of(entry.getKey(), entry.getValue()));
-        }
-        BlockScanSavedData scanData = BlockScanSavedData.get(level);
-        if (scanData.scan() != null) {
-            PacketDistributor.sendToPlayer(player, BlockScanSyncPayload.of(scanData.target(), scanData.scan()));
-        }
-        EntityScanSavedData entityScanData = EntityScanSavedData.get(level);
-        if (entityScanData.scan() != null) {
-            PacketDistributor.sendToPlayer(player,
-                    EntityScanSyncPayload.of(entityScanData.target(), entityScanData.scan()));
+        if (event.getEntity() instanceof ServerPlayer player) {
+            resync(player);
         }
     }
 
@@ -100,7 +92,21 @@ public final class OutlineNetwork {
      */
     @SubscribeEvent
     public static void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            resync(player);
+        }
+    }
+
+    /**
+     * 将服务端保存的所有描边与扫描状态重新同步给指定玩家。
+     * <p>
+     * 仅处理服务端世界；先逐个下发方块描边，再在存在扫描配置时
+     * 分别下发方块扫描与实体扫描的同步数据。
+     *
+     * @param player 目标玩家
+     */
+    private static void resync(ServerPlayer player) {
+        if (!(player.level() instanceof ServerLevel level)) {
             return;
         }
         for (Map.Entry<BlockPos, BlockOutline.Outline> entry : BlockOutlineSavedData.get(level).all().entrySet()) {
@@ -115,6 +121,20 @@ public final class OutlineNetwork {
             PacketDistributor.sendToPlayer(player,
                     EntityScanSyncPayload.of(entityScanData.target(), entityScanData.scan()));
         }
+    }
+
+    /**
+     * 处理客户端的描边重新同步请求。
+     *
+     * @param payload 同步请求包
+     * @param context 数据包上下文
+     */
+    private static void handleResync(OutlineResyncPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (context.player() instanceof ServerPlayer player) {
+                resync(player);
+            }
+        });
     }
 
     /**
@@ -267,6 +287,76 @@ public final class OutlineNetwork {
             player.displayClientMessage(PortalTexts.component("outline_no_target"), true);
             RedstoneChanLIB.LOGGER.info(PortalTexts.text("outline_no_target"));
         });
+    }
+
+    /**
+     * 处理客户端的扫描开关请求。
+     * <p>
+     * 扫描配置写在服务端存档里，所以开关必须在这里做，客户端只收同步结果。
+     *
+     * @param payload 开关请求包
+     * @param context 数据包上下文
+     */
+    private static void handleScanToggle(ScanTogglePayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            if (!(context.player() instanceof ServerPlayer player) || !(player.level() instanceof ServerLevel level)) {
+                return;
+            }
+            if (payload.kind() == ScanTogglePayload.KIND_ENTITY) {
+                toggleEntityScan(player, level);
+            } else {
+                toggleBlockScan(player, level);
+            }
+        });
+    }
+
+    /**
+     * 开关“周围矿石”的扫描高亮（测试入口 J 键）。
+     *
+     * @param player 玩家
+     * @param level  玩家所在维度
+     */
+    private static void toggleBlockScan(ServerPlayer player, ServerLevel level) {
+        if (BlockScanOutline.get(level) != null) {
+            BlockScanOutline.stop(level);
+            notifyState(player, "scan_demo_off");
+            return;
+        }
+        BlockScanOutline.Target target = BlockScanOutline.target(
+                BlockTags.COAL_ORES, BlockTags.IRON_ORES, BlockTags.COPPER_ORES, BlockTags.GOLD_ORES,
+                BlockTags.REDSTONE_ORES, BlockTags.LAPIS_ORES, BlockTags.DIAMOND_ORES, BlockTags.EMERALD_ORES);
+        BlockScanOutline.Scan scan = BlockScanOutline.scan(BlockOutline.Mode.WIRE, 0xFF7CF9FF)
+                .radius(SCAN_DEMO_RADIUS)
+                .throughWalls(true)
+                .oreDefaults()
+                .color(Blocks.DEEPSLATE_DIAMOND_ORE, 0xFF9CFFF2)
+                .build();
+        BlockScanOutline.start(level, target, scan);
+        notifyState(player, "scan_demo_on");
+    }
+
+    /**
+     * 开关“准星所指实体的同类”扫描（测试入口 L 键）。
+     *
+     * @param player 玩家
+     * @param level  玩家所在维度
+     */
+    private static void toggleEntityScan(ServerPlayer player, ServerLevel level) {
+        if (EntityScanOutline.get(level) != null) {
+            EntityScanOutline.stop(level);
+            notifyState(player, "entity_scan_off");
+            return;
+        }
+        Entity target = pickTarget(player);
+        if (target == null) {
+            notifyState(player, "entity_scan_no_target");
+            return;
+        }
+        EntityScanOutline.Target scanTarget = EntityScanOutline.target(target.getType());
+        EntityScanOutline.Scan scan = new EntityScanOutline.Scan(0xFFFFC966, BlockOutline.Style.SOLID,
+                BlockOutline.defaultThickness(BlockOutline.Mode.WIRE), SCAN_DEMO_RADIUS, true);
+        EntityScanOutline.start(level, scanTarget, scan);
+        notifyState(player, "entity_scan_on", target.getType().getDescription().getString());
     }
 
     /**
@@ -428,11 +518,12 @@ public final class OutlineNetwork {
      *
      * @param player 玩家，可为 null
      * @param key    提示文案键
+     * @param args   文案参数
      */
-    private static void notifyState(@Nullable ServerPlayer player, String key) {
-        RedstoneChanLIB.LOGGER.info(PortalTexts.text(key));
+    private static void notifyState(@Nullable ServerPlayer player, String key, Object... args) {
+        RedstoneChanLIB.LOGGER.info(PortalTexts.text(key, args));
         if (player != null) {
-            player.displayClientMessage(PortalTexts.component(key), true);
+            player.displayClientMessage(PortalTexts.component(key, args), true);
         }
     }
 

@@ -1,18 +1,11 @@
 package com.chinaex123.redstone_chan_lib.client.outline;
 
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
-import com.chinaex123.redstone_chan_lib.api.outline.BlockOutline;
-import com.chinaex123.redstone_chan_lib.api.outline.BlockScanOutline;
-import com.chinaex123.redstone_chan_lib.api.outline.EntityScanOutline;
 import com.chinaex123.redstone_chan_lib.network.OutlineCyclePayload;
-import com.chinaex123.redstone_chan_lib.util.PortalTexts;
+import com.chinaex123.redstone_chan_lib.network.ScanTogglePayload;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.block.Blocks;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -27,12 +20,12 @@ import org.lwjgl.glfw.GLFW;
  * <p>
  * 注册三个游戏内按键：K 键向服务端发送描边切换请求，用来演示实体与单方块描边；
  * J 键开关周围矿石的扫描高亮；L 键开关“准星指着的那个实体”的同类扫描。
+ * <p>
+ * 三个键都只是“发请求”，真正的写存档、广播同步都在服务端做，
+ * 所以退出重进世界之后描边与扫描都还在。
  */
 @EventBusSubscriber(modid = RedstoneChanLIB.MODID, value = Dist.CLIENT)
 public final class EntityOutlineDemo {
-
-    /** 扫描测试用的半径 */
-    private static final int SCAN_RADIUS = 16;
 
     /** 切换到下一档描边 */
     private static final KeyMapping CYCLE_KEY = new KeyMapping(
@@ -58,6 +51,9 @@ public final class EntityOutlineDemo {
             GLFW.GLFW_KEY_L,
             "key.categories.redstone_chan_lib");
 
+    private EntityOutlineDemo() {
+    }
+
     /**
      * 注册按键映射。
      *
@@ -73,95 +69,23 @@ public final class EntityOutlineDemo {
     /**
      * 客户端每刻更新。
      * <p>
-     * 消费按键点击：K 键在连上服务端时发送描边切换请求；
-     * J、L 键直接在客户端开关扫描（扫描只是“看”的效果，客户端生效最快）。
+     * 消费按键点击并向服务端发请求：K 切描边，J 开关矿石扫描，L 开关实体扫描。
      *
      * @param event 客户端每刻更新事件
      */
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent.Post event) {
+        if (Minecraft.getInstance().getConnection() == null) {
+            return;
+        }
         while (CYCLE_KEY.consumeClick()) {
-            if (Minecraft.getInstance().getConnection() != null) {
-                PacketDistributor.sendToServer(OutlineCyclePayload.INSTANCE);
-            }
+            PacketDistributor.sendToServer(OutlineCyclePayload.INSTANCE);
         }
         while (SCAN_KEY.consumeClick()) {
-            toggleScan();
+            PacketDistributor.sendToServer(new ScanTogglePayload(ScanTogglePayload.KIND_BLOCK));
         }
         while (ENTITY_SCAN_KEY.consumeClick()) {
-            toggleEntityScan();
+            PacketDistributor.sendToServer(new ScanTogglePayload(ScanTogglePayload.KIND_ENTITY));
         }
-    }
-
-    /**
-     * 开关矿石扫描。
-     * <p>
-     * 开启时用线框高亮周围所有矿石，每种矿用它自己的颜色（和参考模组的配矿色一致），
-     * 再按一次关掉。
-     */
-    private static void toggleScan() {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.player == null) {
-            return;
-        }
-        if (BlockScanOutline.get(minecraft.level) != null) {
-            BlockScanOutline.stop(minecraft.level);
-            notify("scan_demo_off");
-            return;
-        }
-        BlockScanOutline.Target ores = BlockScanOutline.target(
-                BlockTags.COAL_ORES, BlockTags.IRON_ORES, BlockTags.COPPER_ORES, BlockTags.GOLD_ORES,
-                BlockTags.REDSTONE_ORES, BlockTags.LAPIS_ORES, BlockTags.DIAMOND_ORES, BlockTags.EMERALD_ORES);
-        BlockScanOutline.Scan scan = BlockScanOutline.scan(BlockOutline.Mode.WIRE, 0xFF7CF9FF)
-                .radius(SCAN_RADIUS)
-                .throughWalls(true)
-                .oreDefaults()
-                .color(Blocks.DEEPSLATE_DIAMOND_ORE, 0xFF9CFFF2)
-                .build();
-        BlockScanOutline.start(minecraft.level, ores, scan);
-        notify("scan_demo_on");
-    }
-
-    /**
-     * 开关“准星所指实体的同类”扫描。
-     * <p>
-     * 开启时把准星指着的实体的类型当作扫描目标，再按一次关掉。
-     */
-    private static void toggleEntityScan() {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.level == null || minecraft.player == null) {
-            return;
-        }
-        if (EntityScanOutline.get(minecraft.level) != null) {
-            EntityScanOutline.stop(minecraft.level);
-            notify("entity_scan_off");
-            return;
-        }
-        Entity picked = minecraft.crosshairPickEntity;
-        if (picked == null) {
-            notify("entity_scan_no_target");
-            return;
-        }
-        EntityScanOutline.Target target = EntityScanOutline.target(picked.getType());
-        EntityScanOutline.Scan scan = new EntityScanOutline.Scan(0xFFFFC966, BlockOutline.Style.SOLID,
-                BlockOutline.defaultThickness(BlockOutline.Mode.WIRE), SCAN_RADIUS, true);
-        EntityScanOutline.start(minecraft.level, target, scan);
-        Component name = picked.getType().getDescription();
-        minecraft.player.displayClientMessage(
-                PortalTexts.component("entity_scan_on", name.getString()), true);
-        RedstoneChanLIB.LOGGER.info(PortalTexts.text("entity_scan_on", name.getString()));
-    }
-
-    /**
-     * 显示提示并在日志里留一行。
-     *
-     * @param key 文案键
-     */
-    private static void notify(String key) {
-        Minecraft minecraft = Minecraft.getInstance();
-        if (minecraft.player != null) {
-            minecraft.player.displayClientMessage(PortalTexts.component(key), true);
-        }
-        RedstoneChanLIB.LOGGER.info(PortalTexts.text(key));
     }
 }

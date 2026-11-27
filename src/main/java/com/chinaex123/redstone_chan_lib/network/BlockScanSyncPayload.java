@@ -3,10 +3,6 @@ package com.chinaex123.redstone_chan_lib.network;
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
 import com.chinaex123.redstone_chan_lib.api.outline.BlockOutline;
 import com.chinaex123.redstone_chan_lib.api.outline.BlockScanOutline;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -16,6 +12,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 扫描高亮同步包。

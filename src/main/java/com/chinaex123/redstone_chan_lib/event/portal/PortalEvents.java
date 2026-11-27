@@ -1,14 +1,9 @@
 package com.chinaex123.redstone_chan_lib.event.portal;
 
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
-import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalActivation;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinitions;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalRitualActivation;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalShape;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalStructureHelper;
+import com.chinaex123.redstone_chan_lib.api.portal.*;
 import com.chinaex123.redstone_chan_lib.block.CustomPortal;
+import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
 import com.chinaex123.redstone_chan_lib.util.PortalTeleportManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -17,7 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;

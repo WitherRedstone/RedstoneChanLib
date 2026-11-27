@@ -3,8 +3,6 @@ package com.chinaex123.redstone_chan_lib.api.outline;
 import com.chinaex123.redstone_chan_lib.network.OutlineNetwork;
 import com.chinaex123.redstone_chan_lib.util.PortalTexts;
 import com.chinaex123.redstone_chan_lib.world.EntityScanSavedData;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -14,6 +12,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 周围实体扫描高亮 API。

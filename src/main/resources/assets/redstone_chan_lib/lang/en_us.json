@@ -43,5 +43,9 @@
   "key.redstone_chan_lib.entity_scan_demo": "Entity scan outline (demo)",
   "message.redstone_chan_lib.entity_scan_on": "Entity scan: %s",
   "message.redstone_chan_lib.entity_scan_off": "Entity scan: off",
-  "message.redstone_chan_lib.entity_scan_no_target": "Entity scan: no entity in sight"
+  "message.redstone_chan_lib.entity_scan_no_target": "Entity scan: no entity in sight",
+  "message.redstone_chan_lib.creative_tab.shift_hint": "Hold Shift to select multiple sections",
+  "creative_tab.redstone_chan_lib.materials": "Materials",
+  "creative_tab.redstone_chan_lib.ores": "Ores",
+  "creative_tab.redstone_chan_lib.blocks": "Blocks"
 }

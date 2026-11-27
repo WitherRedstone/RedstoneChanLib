@@ -3,6 +3,10 @@
   "package": "com.chinaex123.redstone_chan_lib.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [],
+  "client": [
+    "client.CreativeModeInventoryScreenInvoker",
+    "client.CreativeModeInventoryScreenMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   },

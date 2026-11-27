@@ -9,7 +9,6 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public interface RCLBlockEntities {
-
     DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, RedstoneChanLIB.MODID);
 
     /** 传送门方块实体 */

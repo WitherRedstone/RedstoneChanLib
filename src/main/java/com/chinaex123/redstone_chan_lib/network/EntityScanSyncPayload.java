@@ -3,13 +3,14 @@ package com.chinaex123.redstone_chan_lib.network;
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
 import com.chinaex123.redstone_chan_lib.api.outline.BlockOutline;
 import com.chinaex123.redstone_chan_lib.api.outline.EntityScanOutline;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 实体扫描高亮同步包。

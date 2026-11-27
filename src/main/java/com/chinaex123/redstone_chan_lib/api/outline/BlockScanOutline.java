@@ -3,12 +3,6 @@ package com.chinaex123.redstone_chan_lib.api.outline;
 import com.chinaex123.redstone_chan_lib.network.OutlineNetwork;
 import com.chinaex123.redstone_chan_lib.util.PortalTexts;
 import com.chinaex123.redstone_chan_lib.world.BlockScanSavedData;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -19,6 +13,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.Tags;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.*;
 
 /**
  * 周围方块扫描高亮 API。
@@ -387,7 +383,7 @@ public final class BlockScanOutline {
         }
 
         /**
-         * 加上内置的矿石标签配色（{@link #oreTagColors()}），已有的条目保留不变。
+         * 加上内置的矿石标签配色。
          *
          * @return 自己
          */

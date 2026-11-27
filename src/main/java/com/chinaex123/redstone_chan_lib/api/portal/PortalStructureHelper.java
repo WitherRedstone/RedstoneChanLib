@@ -1,7 +1,7 @@
 package com.chinaex123.redstone_chan_lib.api.portal;
 
-import com.chinaex123.redstone_chan_lib.block.PortalBlockEntity;
 import com.chinaex123.redstone_chan_lib.block.CustomPortal;
+import com.chinaex123.redstone_chan_lib.block.PortalBlockEntity;
 import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;

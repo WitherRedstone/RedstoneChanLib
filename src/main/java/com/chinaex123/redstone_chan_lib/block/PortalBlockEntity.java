@@ -1,8 +1,8 @@
 package com.chinaex123.redstone_chan_lib.block;
 
-import com.chinaex123.redstone_chan_lib.init.RCLBlockEntities;
 import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
 import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinitions;
+import com.chinaex123.redstone_chan_lib.init.RCLBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;

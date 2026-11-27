@@ -1,12 +1,12 @@
 package com.chinaex123.redstone_chan_lib;
 
-import com.chinaex123.redstone_chan_lib.init.*;
 import com.chinaex123.redstone_chan_lib.data.portal.BuiltinPortalDefinitions;
+import com.chinaex123.redstone_chan_lib.init.*;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
 
 @Mod(RedstoneChanLIB.MODID)

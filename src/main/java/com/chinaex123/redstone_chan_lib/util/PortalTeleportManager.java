@@ -1,11 +1,11 @@
 package com.chinaex123.redstone_chan_lib.util;
 
+import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
 import com.chinaex123.redstone_chan_lib.api.portal.PortalShape;
 import com.chinaex123.redstone_chan_lib.api.portal.PortalTeleport;
 import com.chinaex123.redstone_chan_lib.block.CustomPortal;
 import com.chinaex123.redstone_chan_lib.block.PortalBlockEntity;
 import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;

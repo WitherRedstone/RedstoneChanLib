@@ -1,8 +1,9 @@
 package com.chinaex123.redstone_chan_lib.util;
 
-import java.util.Arrays;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+
+import java.util.Arrays;
 
 /**
  * 传送门提示文案工具类。

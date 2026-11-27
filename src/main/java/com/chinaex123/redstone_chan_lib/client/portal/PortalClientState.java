@@ -1,6 +1,5 @@
 package com.chinaex123.redstone_chan_lib.client.portal;
 
-
 import com.chinaex123.redstone_chan_lib.util.PortalTeleportManager;
 
 /**

@@ -3,11 +3,12 @@ package com.chinaex123.redstone_chan_lib.network;
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
 import com.chinaex123.redstone_chan_lib.api.outline.EntityOutline;
 import io.netty.buffer.ByteBuf;
-import java.util.UUID;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+
+import java.util.UUID;
 
 /**
  * 描边同步数据包。

@@ -2,9 +2,6 @@ package com.chinaex123.redstone_chan_lib.client.outline;
 
 import com.chinaex123.redstone_chan_lib.api.outline.EntityOutline;
 import com.chinaex123.redstone_chan_lib.network.OutlineSyncPayload;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +10,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 客户端描边应用器。

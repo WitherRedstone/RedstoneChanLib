@@ -1,17 +1,9 @@
 package com.chinaex123.redstone_chan_lib.data.portal;
 
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalCatalyst;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinitions;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalOrientation;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalRitual;
+import com.chinaex123.redstone_chan_lib.api.portal.*;
 import com.chinaex123.redstone_chan_lib.util.PortalTexts;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;

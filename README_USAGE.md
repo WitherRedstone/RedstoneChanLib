@@ -652,6 +652,117 @@ EntityScanOutline.stop(level);
 - 线框画的是实体的碰撞箱，不是模型轮廓；大型实体（比如末影龙）框会比较大
 - 测试入口：游戏里按 `L`，准星对着某个实体时开关“扫描这个实体的同类”（橙色线框）
 
+## 创造模式物品栏分区（Java 调用）
+
+`SectionedCreativeTab` 用来把创造栏拆成分区：进游戏后界面左侧按分区顺序出现一排按钮，点击只显示这个分区，按住 Shift 点击可以同时选多个。没被选中的分区不会出现在列表里，但搜索仍能搜到它们。
+
+下面示例用到的 import：
+
+```java
+import com.chinaex123.redstone_chan_lib.api.creative.CreativeSection;
+import com.chinaex123.redstone_chan_lib.api.creative.CreativeSectionStyle;
+import com.chinaex123.redstone_chan_lib.api.creative.SectionedCreativeTab;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
+```
+
+最小用法：三个分区，外观全用默认值。
+
+```java
+public static final SectionedCreativeTab TAB = SectionedCreativeTab.builder(
+                ResourceLocation.fromNamespaceAndPath("mymod", "main_tab"))
+        .title(Component.translatable("itemGroup.mymod"))
+        .icon(() -> new ItemStack(Items.DIAMOND))
+        .section(Component.literal("材料"), () -> new ItemStack(Items.IRON_INGOT),
+                output -> output.accept(Items.IRON_INGOT))
+        .section(Component.literal("工具"), () -> new ItemStack(Items.IRON_PICKAXE),
+                output -> {
+                    output.accept(Items.IRON_PICKAXE);
+                    output.accept(Items.IRON_AXE);
+                })
+        .section(Component.literal("方块"), () -> new ItemStack(Items.STONE),
+                output -> output.accept(Items.STONE))
+        .build();
+
+// 注册（生成好的页签直接交给自己的 DeferredRegister）
+public static final DeferredRegister<CreativeModeTab> TABS =
+        DeferredRegister.create(Registries.CREATIVE_MODE_TAB, "mymod");
+public static final DeferredHolder<CreativeModeTab, CreativeModeTab> MAIN =
+        TABS.register("main_tab", () -> TAB.tab());
+```
+
+自定义外观：底图（未选中、选中、悬停）、按钮大小、物品渲染开关与大小、提示文本。
+
+```java
+CreativeSectionStyle style = CreativeSectionStyle.defaults()
+        .withTexture(                       // 未选中 / 选中的底图
+                ResourceLocation.fromNamespaceAndPath("mymod", "textures/gui/tab_button.png"),
+                ResourceLocation.fromNamespaceAndPath("mymod", "textures/gui/tab_button_selected.png"))
+        .withHoveredTexture(                // 鼠标悬停时叠在底图上的那张，null 表示悬停不高亮
+                ResourceLocation.fromNamespaceAndPath("mymod", "textures/gui/tab_button_hovered.png"))
+        .withSize(30, 30)                   // 按钮大小
+        .withTextureSize(30, 30)            // 底图实际像素尺寸（和按钮一致就不用写）
+        .withIcon(true)                     // 画不画物品
+        .withIconScale(0.75F)               // 物品渲染大小，1.0 是 16×16
+        .withIconOffset(9, 9)               // 物品相对按钮左上角的偏移
+        .withTooltip(Component.literal("材料都在这里"));  // 提示文本，null 表示用默认的“名字 + 按住 Shift 可多选”
+```
+
+三张底图也可以一次性换成自己的：`withTexture(未选中, 选中, 悬停)`。
+
+样式可以给整个页签设一份默认值，也可以给单个分区单独设：
+
+```java
+SectionedCreativeTab.builder(id)
+        .title(Component.literal("我的创造栏"))
+        .icon(() -> new ItemStack(Items.DIAMOND))
+        .style(CreativeSectionStyle.defaults())
+        .section(CreativeSection.of(
+                Component.literal("特殊分区"),
+                () -> new ItemStack(Items.NETHER_STAR),
+                output -> output.accept(Items.NETHER_STAR),
+                CreativeSectionStyle.defaults().withIcon(false)))  // 这个按钮只显示底图
+        .build();
+```
+
+### 可以直接调用的方法
+
+- `SectionedCreativeTab.builder(ResourceLocation id)`：开始描述页签，返回构造器。
+- `Builder.title(Component)`：页签标题（必填）。
+- `Builder.icon(Supplier<ItemStack>)`：页签图标。
+- `Builder.style(CreativeSectionStyle)`：所有分区的默认按钮样式。
+- `Builder.section(Component name, Supplier<ItemStack> icon, Consumer<CreativeModeTab.Output> content)`：加一个用默认样式的分区。
+- `Builder.section(CreativeSection section)`：加一个分区，可带独立样式。
+- `Builder.build()`：生成并登记，返回 `SectionedCreativeTab`。
+- `SectionedCreativeTab.tab()`：生成好的 `CreativeModeTab`，交给自己的 `DeferredRegister`。
+- `SectionedCreativeTab.id()`／`sections()`／`style()`：取回 id、分区列表与默认样式。
+- `CreativeSection.of(name, icon, content)`／`of(name, icon, content, style)`：构造分区，也可以直接 `new CreativeSection(...)`。
+- `CreativeSectionStyle.defaults()`：默认样式（24×24、自带底图、物品原尺寸居中偏上、默认提示）。
+- `CreativeSectionStyle.withTexture(未选中, 选中, 悬停)`／`withTexture(未选中, 选中)`／`withTexture(同一张)`：换底图。
+- `withHoveredTexture(ResourceLocation)`：单独换鼠标悬停底图，`null` 表示悬停时不做额外高亮。
+- `withSize(int width, int height)`／`withTextureSize(int w, int h)`：按钮大小与底图像素尺寸。
+- `withIcon(boolean)`／`withIconScale(float)`／`withIconOffset(int x, int y)`：物品渲染的开关、大小与偏移。
+- `withTooltip(Component)`：悬停提示，`null` 表示用默认的“分区名 + 按住 Shift 可多选”。
+- `CreativeSections.byTab(CreativeModeTab)`／`byId(ResourceLocation)`：查登记信息（`Entry` 里有 id、页签、分区、默认样式）。
+- `CreativeSections.isActive(tab, index)`／`selectSection(tab, index)`／`toggleSection(tab, index)`：读/改选中状态（代码里也能主动切换）。
+- `CreativeSections.sections(tab)`／`styleOf(entry, index)`／`addItems(tab, output)`／`indices(tab)`：取分区、取实际样式、填物品、取下标。
+
+### 几点说明
+
+- 页签必须在模组构造阶段（`DeferredRegister` 注册期间）构建，`build()` 会同时把页签登记到 `CreativeSections`，界面靠这份登记来画按钮
+- 分区顺序就是按钮顺序，也是物品在创造栏里的排列顺序；按钮一列放 6 个，超过就换到左边一列
+- 未选中的分区以“只进搜索结果”注册，所以它们在创造栏里看不到，但搜索栏里能搜到，不会丢物品
+- 自带三张 24×24 的默认底图（未选中、选中、悬停），想换成自己的图就把 PNG 放进 `assets/<你的命名空间>/textures/gui/...`，路径要写全（含 `textures/` 前缀和 `.png`）
+- 悬停图是**叠在**底图之上画的，默认那张中间是透明的只留一圈高亮边，所以选中状态仍然看得出来；如果你换成一张不透明的悬停图，它会把选中底图整个盖住
+- 物品是原版物品渲染，缩放通过 `PoseStack` 做，所以 `withIconScale(0.5F)` 得到 8×8、`0.75F` 得到 12×12
+- 按钮位置是“界面左边距 - 按钮宽度 - 3”往左排，界面宽度变化时会跟着 `leftPos` 走
+
 ## 实现说明
 
 传送门：
@@ -681,6 +792,7 @@ EntityScanOutline.stop(level);
 - 方块的彩色风格和生物一样按顶点位置铺开色相：同一条棱的两端各算一次颜色，中间自动插值，所以一整圈方框上就能同时看到好几种颜色
 - 方块描边同样支持“是否穿透方块”：为 `false` 时开深度测试，被挡住的部分自然不画；为 `true` 时关深度测试，隔着墙也能看见轮廓，和机械动力那种“透视高亮”一致
 - 方块没了之后描边会自己收掉：服务端监听方块破坏与爆炸事件，把同坐标的记录删掉并同步给附近玩家；客户端渲染时还会检查一次方块是不是已经变成空气（区块没加载就先不动），所以漏网的情况也能兜住
+- 退出重进之后描边还在：描边记在维度存档里，登录、换维度时服务端会重发一遍；客户端在进入世界时会把上一份缓存清掉，清完立刻发一个 `outline_resync` 请求，让服务端再发一次，所以不会出现“刚进去有、下一帧被自己清掉”的时序问题
 
 方块扫描高亮：
 
@@ -688,6 +800,7 @@ EntityScanOutline.stop(level);
 - 那张表直接喂给 `BlockOutlineRenderer.renderBoxes(...)`，所以五种模式、颜色、彩色、粗细、穿透开关全部复用同一套画法，不维护第二份渲染代码
 - 线框模式用的是另一种图元：`VertexFormat.Mode.DEBUG_LINES` 手写十二条棱，坐标同样先变换到镜头空间、着色器的 ModelViewMat 清成单位矩阵，和方块描边用的是同一套坐标约定；线段天生 1 像素宽、普通 alpha 混合，所以又细又干净
 - 扫描配置和方块描边一样有服务端存档与同步：服务端调用会写进维度存档并广播给同维度玩家，玩家登录、换维度时补发；客户端调用则只影响自己
+- 游戏里按 `J`、`L` 开的扫描也是走服务端的（客户端只发一个 `scan_toggle` 请求），所以退出重进之后扫描还在；如果只在客户端直接调 `BlockScanOutline.start(...)`，那就是临时的，重进就没了
 - 逐方块、逐标签配色是在生成描边表时定的：每个命中的方块都单独算一次 `colorOf(scan, state)`，优先级是“方块表 → 标签表 → 统一颜色”，所以同一屏里煤是深灰、铁是米色、钻石是青色
 - 内置配色刻意按 NeoForge 的 `c:ores/xxx` 标签写，而不是写死方块 id：别的模组的铜矿、锡矿只要进了矿词标签就自动有颜色
 - 两张颜色表跟着扫描配置一起存档与同步（NBT 里存 id 与颜色两列，方块与标签各一组），客户端拿到的就是算好的成品表
@@ -697,3 +810,10 @@ EntityScanOutline.stop(level);
 - 扫描同样在客户端做：每 10 tick（或玩家移动超过 4 格）用 `level.getEntitiesOfClass(Entity.class, 区域, 目标判定)` 取一批实体，把它们的碰撞箱缓存下来
 - 画的时候复用 `BlockOutlineRenderer.renderWireBoxes(...)`，所以和方块线框是同一套图元、同一套坐标约定、同一套穿透开关，不额外维护渲染代码
 - 实体目标是“类型列表 + 标签列表”，判定时先跳过已死亡的实体；服务端调用会写进该维度存档并在登录、换维度时补发
+
+创造模式物品栏分区：
+
+- 分区信息在构建页签时登记到 `CreativeSections`（页签实例与 id 两套索引），`displayItems` 回调里按页签取回分区，所以页签本身不需要知道有哪些分区
+- 界面侧靠两个客户端 Mixin：一个在 `CreativeModeInventoryScreen#selectTab` 的 HEAD 位置拆掉旧按钮、按新页签重建，一个用 `@Invoker` 暴露私有的 `refreshCurrentTabContents` 供点击后刷新列表
+- 点击分区后先改选中集合，再用页签当前的显示条件重建内容（`buildContents`），最后用新列表刷新界面，所以不需要重新开界面
+- 未选中的分区通过一个包装过的 `CreativeModeTab.Output` 把物品降级成 `SEARCH_TAB_ONLY`，既不出现在列表里，也不会在搜索里丢

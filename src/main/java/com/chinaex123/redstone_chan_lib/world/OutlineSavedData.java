@@ -1,9 +1,6 @@
 package com.chinaex123.redstone_chan_lib.world;
 
 import com.chinaex123.redstone_chan_lib.api.outline.EntityOutline;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -11,6 +8,10 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 把描边设置写进存档。

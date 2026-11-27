@@ -1,21 +1,17 @@
 package com.chinaex123.redstone_chan_lib.client;
 
 import com.chinaex123.redstone_chan_lib.RedstoneChanLIB;
+import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
 import com.chinaex123.redstone_chan_lib.block.PortalBlockEntity;
 import com.chinaex123.redstone_chan_lib.client.particles.HolyMoteParticle;
 import com.chinaex123.redstone_chan_lib.client.portal.PortalClientEvents;
 import com.chinaex123.redstone_chan_lib.client.portal.PortalOverlay;
 import com.chinaex123.redstone_chan_lib.init.RCLBlocks;
 import com.chinaex123.redstone_chan_lib.init.RCLParticles;
-import com.chinaex123.redstone_chan_lib.api.portal.PortalDefinition;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.neoforged.neoforge.client.event.*;
 
 /**
  * 客户端初始化。

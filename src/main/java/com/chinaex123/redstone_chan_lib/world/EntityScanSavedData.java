@@ -2,8 +2,6 @@ package com.chinaex123.redstone_chan_lib.world;
 
 import com.chinaex123.redstone_chan_lib.api.outline.BlockOutline;
 import com.chinaex123.redstone_chan_lib.api.outline.EntityScanOutline;
-import java.util.ArrayList;
-import java.util.List;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -17,6 +15,9 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 实体扫描高亮的存档数据。
