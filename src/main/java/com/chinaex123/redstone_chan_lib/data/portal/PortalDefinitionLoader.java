@@ -32,7 +32,7 @@ import java.util.Map;
 public class PortalDefinitionLoader extends SimpleJsonResourceReloadListener {
 
     /** 数据包中的定义目录。 */
-    public static final String DIRECTORY = RedstoneChanLIB.MODID + "/portal";
+    public static final String DIRECTORY = "/portal";
 
     /** JSON 解析器。 */
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

@@ -31,58 +31,58 @@ public final class BuiltinCollisionRecipes {
      */
     public static void register() {
         // 熔岩碰到钻石矿石：百分百掉一颗钻石
-        CollisionRecipes.register(RedstoneChanLIB.id("lava_diamond_ore"),
-                new BlockCollisionRecipe(
-                        FluidIngredient.of(Fluids.LAVA),
-                        BlockCollisionRecipe.blocks(Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE),
-                        List.of(CollisionOutput.item(Items.DIAMOND, 1, 1.0F)),
-                        1, false, true,
-                        Optional.empty()
-                ));
+//        CollisionRecipes.register(RedstoneChanLIB.id("lava_diamond_ore"),
+//                new BlockCollisionRecipe(
+//                        FluidIngredient.of(Fluids.LAVA),
+//                        BlockCollisionRecipe.blocks(Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE),
+//                        List.of(CollisionOutput.item(Items.DIAMOND, 1, 1.0F)),
+//                        1, false, true,
+//                        Optional.empty()
+//                ));
 
         // 熔岩碰到钻石块：再放一个钻石块
-        CollisionRecipes.register(RedstoneChanLIB.id("lava_diamond_block"),
-                new BlockCollisionRecipe(
-                        FluidIngredient.of(Fluids.LAVA),
-                        BlockCollisionRecipe.blocks(Blocks.DIAMOND_BLOCK),
-                        List.of(CollisionOutput.block(Blocks.DIAMOND_BLOCK, 1, 1.0F)),
-                        1, false, false,
-                        Optional.empty()
-                ));
+//        CollisionRecipes.register(RedstoneChanLIB.id("lava_diamond_block"),
+//                new BlockCollisionRecipe(
+//                        FluidIngredient.of(Fluids.LAVA),
+//                        BlockCollisionRecipe.blocks(Blocks.DIAMOND_BLOCK),
+//                        List.of(CollisionOutput.block(Blocks.DIAMOND_BLOCK, 1, 1.0F)),
+//                        1, false, false,
+//                        Optional.empty()
+//                ));
 
-        // 熔岩碰到远古残骸：一半概率还是远古残骸，四分之一下界石英矿石，四分之一下界岩
-        CollisionRecipes.register(RedstoneChanLIB.id("lava_ancient_debris"),
-                new BlockCollisionRecipe(
-                        FluidIngredient.of(Fluids.LAVA),
-                        BlockCollisionRecipe.blocks(Blocks.ANCIENT_DEBRIS),
-                        List.of(
-                                CollisionOutput.block(Blocks.ANCIENT_DEBRIS, 1, 0.5F),
-                                CollisionOutput.block(Blocks.NETHER_QUARTZ_ORE, 1, 0.25F),
-                                CollisionOutput.block(Blocks.NETHERRACK, 1, 0.25F)
-                        ),
-                        1, false, false,
-                        SoundEvents.LAVA_EXTINGUISH
-                ));
+//        // 熔岩碰到远古残骸
+//        CollisionRecipes.register(RedstoneChanLIB.id("lava_ancient_debris"),
+//                new BlockCollisionRecipe(
+//                        FluidIngredient.of(Fluids.LAVA),
+//                        BlockCollisionRecipe.blocks(Blocks.ANCIENT_DEBRIS),
+//                        List.of(
+//                                CollisionOutput.block(Blocks.NETHERRACK, 1, 0.8F),
+//                                CollisionOutput.block(Blocks.NETHER_QUARTZ_ORE, 1, 0.10F),
+//                                CollisionOutput.block(Blocks.ANCIENT_DEBRIS, 1, 0.01F)
+//                        ),
+//                        1, false, false,
+//                        SoundEvents.LAVA_EXTINGUISH
+//                ));
 
-        // 熔岩碰到金块，且中间那格空的下方也是金块时，才把流体那一格变成金矿石
-        CollisionRecipes.register(RedstoneChanLIB.id("lava_gold_block"),
-                new BlockCollisionRecipe(
-                        FluidIngredient.of(Fluids.LAVA),
-                        BlockCollisionRecipe.blocks(Blocks.GOLD_BLOCK),
-                        List.of(CollisionOutput.block(Blocks.GOLD_ORE, 1, 1.0F)),
-                        1, false, false, false, null,
-                        BelowCondition.center(Blocks.GOLD_BLOCK)
-                ));
-
-        // 熔岩碰到石头，且熔岩自己脚下是岩浆块时，才把流体那一格变成岩浆块
-        CollisionRecipes.register(RedstoneChanLIB.id("lava_stone_on_magma"),
-                new BlockCollisionRecipe(
-                        FluidIngredient.of(Fluids.LAVA),
-                        BlockCollisionRecipe.blocks(Blocks.STONE),
-                        List.of(CollisionOutput.block(Blocks.MAGMA_BLOCK, 1, 1.0F)),
-                        1, false, false, false, null,
-                        BelowCondition.down(Blocks.MAGMA_BLOCK)
-                ));
+//        // 熔岩碰到金块，且中间那格空的下方也是金块时，才把流体那一格变成金矿石
+//        CollisionRecipes.register(RedstoneChanLIB.id("lava_gold_block"),
+//                new BlockCollisionRecipe(
+//                        FluidIngredient.of(Fluids.LAVA),
+//                        BlockCollisionRecipe.blocks(Blocks.GOLD_BLOCK),
+//                        List.of(CollisionOutput.block(Blocks.GOLD_ORE, 1, 1.0F)),
+//                        1, false, false, false, null,
+//                        BelowCondition.center(Blocks.GOLD_BLOCK)
+//                ));
+//
+//        // 熔岩碰到石头，且熔岩自己脚下是岩浆块时，才把流体那一格变成岩浆块
+//        CollisionRecipes.register(RedstoneChanLIB.id("lava_stone_on_magma"),
+//                new BlockCollisionRecipe(
+//                        FluidIngredient.of(Fluids.LAVA),
+//                        BlockCollisionRecipe.blocks(Blocks.STONE),
+//                        List.of(CollisionOutput.block(Blocks.MAGMA_BLOCK, 1, 1.0F)),
+//                        1, false, false, false, null,
+//                        BelowCondition.down(Blocks.MAGMA_BLOCK)
+//                ));
 
     }
 }

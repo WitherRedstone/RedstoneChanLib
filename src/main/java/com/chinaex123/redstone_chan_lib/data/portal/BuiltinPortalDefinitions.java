@@ -19,14 +19,14 @@ public final class BuiltinPortalDefinitions {
 
     public static void register() {
 
-        // 竖向门：钻石块外框 + 钻石或水桶激活 + 默认颜色 + 名称“测试” + 前往下界
-        PortalDefinitions.register(PortalDefinition.builder(RedstoneChanLIB.id("test"))
-                .frameBlock(Blocks.DIAMOND_BLOCK)
-                .catalyst(Items.DIAMOND)
-                .fluidCatalyst(Fluids.WATER)
-                .name(Component.translatable("portal.redstone_chan_lib.test"))
-                .dimension(Level.NETHER)
-                .build());
+//        // 竖向门：钻石块外框 + 钻石或水桶激活 + 默认颜色 + 名称“测试” + 前往下界
+//        PortalDefinitions.register(PortalDefinition.builder(RedstoneChanLIB.id("test"))
+//                .frameBlock(Blocks.DIAMOND_BLOCK)
+//                .catalyst(Items.DIAMOND)
+//                .fluidCatalyst(Fluids.WATER)
+//                .name(Component.translatable("portal.redstone_chan_lib.test"))
+//                .dimension(Level.NETHER)
+//                .build());
 
     }
 }
