@@ -16,25 +16,10 @@ import net.neoforged.bus.api.IEventBus;
  */
 public final class RCLDemoFluids {
 
-    /**
-     * 液态红石：偏稠、会发光、在水里游不动。
-     */
     public static FluidEntry LIQUID_REDSTONE;
-
-    /**
-     * 红石气体：密度为负，会往天上飘，飘一会儿自己散掉。
-     */
     public static FluidEntry REDSTONE_GAS;
-
-    /**
-     * 红石蒸汽：参数和气体差不多，但桶右键是直接散成粒子，不会留下方块。
-     */
     public static FluidEntry REDSTONE_VAPOR;
-
     private static FluidRegistrar registrar;
-
-    private RCLDemoFluids() {
-    }
 
     /**
      * 注册示例流体。
@@ -107,7 +92,6 @@ public final class RCLDemoFluids {
                 .build());
     }
 
-    /** @return 示例流体注册器 */
     public static FluidRegistrar registrar() {
         return registrar;
     }
