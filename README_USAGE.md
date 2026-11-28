@@ -130,15 +130,6 @@
 
 摆法：挖一个 2×2、深度一格的坑灌满水，四周一圈方块的顶面插上花，往水里丢一颗钻石；钻石沉下去之后会落雷，水面变成横门。
 
-### 几点说明
-
-- 门框必须在**同一个平面**上：要么全是同一层的方块（平铺的门），要么全是同一个竖直平面（竖着的门），斜着拐弯的形状不认
-- 四个角可以留空，就像原版下界门；判定看的是四条边有没有把内部封住，内部必须全是空气（或可替换方块，比如草）
-- 门框不要和同材质的墙、地板连成一片，否则贴着墙点亮时会被当成框架的一部分，导致“怎么点都不亮”或者门比预想的大
-- `dimension` 只能指向**已经存在**的维度。数据包不能凭空新建维度，要加新维度得用别的模组（或者自己写维度 JSON）
-- 仪式门的框架写的是“水池四周方块**上方**那一格”，所以示例里用花：水池边一圈方块，顶上插花
-- 数据包里的颜色是乘法染色，写 `#FF0000` 得到的是纯红，写 `#FFFFFF` 得到接近原贴图的灰白；想恢复默认紫色就删掉 `color`，或者写 `#730DFF`
-
 ## 传送门（Java 调用）
 
 - 对外公开的 API 分两个包。传送门相关的在 `com.chinaex123.redstone_chan_lib.api.portal`，一共十二个类：`PortalDefinition`（定义）、`PortalCatalyst`（激活方式）、`PortalRitual`（仪式配置）、`PortalDefinitions`（注册表）、`PortalShape`（形状判定）、`PortalOrientation`（摆放类型）、`PortalStructureHelper`（摆放与拆除）、`PortalPlacement`（跨维度定位）、`PortalTeleport`（传送执行）、`PortalActivation`（激活流程）、`PortalRitualActivation`（仪式激活流程）、`PortalEffects`（特效与音效）；提示文案工具 `com.chinaex123.redstone_chan_lib.util.PortalTexts` 也在公开范围内。生物描边在 `com.chinaex123.redstone_chan_lib.api.outline`，有两个类：`EntityOutline`（生物描边）与 `BlockOutline`（方块描边）。包的说明见各自目录下的 `package-info.java`。
@@ -301,14 +292,6 @@ PortalDefinitions.register(
 - `PortalTexts.component(String key, Object... args)`：取文本组件，方便塞进界面或提示里。
 - 键统一以 `message.redstone_chan_lib.` 开头（`PortalTexts.PREFIX`），写在模组自己的语言文件里，其它模组或整合包也可以覆盖同名键来改写提示。
 
-### 几点说明
-
-- 注册要在模组构造阶段（`@Mod` 的构造器里，或者 `FMLCommonSetupEvent` 之前）做完，错过这个时间点注册表已经建好，数据包也不会再补发
-- Java 内置定义和数据包定义共用同一个 id 空间：同一个 id 同时存在时以数据包为准，`/reload` 之后又变回数据包那份；把数据包删掉，Java 那份就会重新生效
-- 传 `dimension(...)` 时那个维度必须已经存在，否则玩家进门会被卡在 `resolve` 返回 `null` 的那一步（传送直接取消）
-- `PortalDefinition` 是不可变的，想改就重新 `build()` 一个新的再 `register` 覆盖
-- 自定义名称只对“单个方块”有效的那一份存在方块实体里，`Block#getName()` 没有坐标参数，所以物品栏、Jade 这类地方看到的是默认定义的名字
-
 ## 生物描边（Java 调用）
 
 描边本身只影响画面，不改实体属性；但“谁身上有描边”这件事是记在服务端存档里的，所以**推荐在服务端调用**：
@@ -357,16 +340,6 @@ EntityOutline.clear(entity);
 - `activeEntities()`：当前所有带描边的生物。
 - `defaultColor(Mode mode)`：某种模式的默认颜色。
 - 模式是 `EntityOutline.Mode` 的三个值 `GLOW`（发光）、`BLACK`（黑色）、`HIGHLIGHT`（高光）；纯色/彩色是 `EntityOutline.Style` 的 `SOLID`、`RAINBOW`；彩色不是整只生物一起换色，而是按屏幕位置铺开色相，所以同一瞬间这圈光晕上就有红、黄、绿、蓝，而且会随时间缓慢流动。
-
-### 几点说明
-
-- 同一个实体重复调用会覆盖之前的设置，所以换颜色、换模式都直接再调一次 `apply` 即可
-- 在服务端调用时，设置会写进世界存档（`redstone_chan_lib_outlines`），并在生物进入玩家视野时自动补发一次，所以退出重进、换维度回来都还在；在客户端调用只存在内存里，重进就没了
-- 描边是按实体记录的，实体被移除后对应的记录会自动失效；`EntityOutline.clearAll()` 只清掉当前客户端画面上的描边，不动存档
-- 只有活体（`LivingEntity`）会被渲染出来，其它实体加了也没有效果
-- 颜色只取低 24 位（R、G、B），透明度由描边的渲染类型固定
-- 粗细默认 0.08 格，换算成屏幕像素是“一格 = 100 像素”，所以默认约 8 像素；这个粗细是**固定的**，不随生物远近、视角高低变化，最多夹在 3~32 像素之间。想要更粗就调大 `thickness`
-- 模组自带一个测试入口：对着生物按 `K`，依次切换“发光（青色）→ 发光（彩色）→ 黑色 → 高光 → 发光（青色，被挡住就不画）→ 取消”，动作栏会提示当前模式。按 `K` 的切换是发给服务端做的，所以设完之后退出重进也还在，可以顺便验证持久化
 
 ## 方块描边（Java 调用）
 
@@ -422,17 +395,6 @@ BlockOutline.clear(level, pos);
 - `defaultColor(Mode mode)`：某种模式的默认颜色。
 - `defaultThickness(Mode mode)`：某种模式的默认粗细，机械动力风格是 `CREATE_THICKNESS`（0.09 格），线框是 `WIRE_THICKNESS`（0.01 格），其它模式是 0.045 格。
 - 模式是 `BlockOutline.Mode` 的五个值 `GLOW`（发光）、`BLACK`（黑色）、`HIGHLIGHT`（高光）、`CREATE`（机械动力风格）、`WIRE`（线框）。
-
-### 几点说明
-
-- 同一个方块重复调用会覆盖之前的设置，换颜色、换模式直接再调一次 `apply` 即可；重设一次会重新播一遍出现动画
-- 描边画的是方块的包围盒棱线，所以形状奇怪的方块（楼梯、台阶）也是按整格画一圈
-- `CREATE` 模式完全显示时的粗细就是你设定的粗细（默认 `CREATE_THICKNESS`，0.09 格，约 9 像素），出现时由细变粗、消失时由粗变细，方框始终贴在方块上，不会向外扩也不会收
-- `WIRE` 是唯一不画实心方条的模式：十二条棱各画一条线段（`DEBUG_LINES`），所以看起来就是一圈细线，一次标上百个方块也不会糊；线段线宽很多驱动会钳到 1 像素，所以默认就是最细
-- `CREATE` 默认不是一直显示：亮起来、保持 `holdSeconds` 秒（默认 1.5 秒）、再原地变细消失；传 `keepVisible = true` 就一直显示
-- 测试入口：对着方块按 `K`，没有对着生物时会依次切换“发光（青色）→ 发光（彩色）→ 黑色 → 高光 → 机械动力风格 → 机械动力风格（一直显示）→ 线框 → 取消”，动作栏会提示当前模式
-- 描边按坐标记录，不区分方块种类；方块被挖掉、被爆炸炸掉时会自动清掉这个坐标上的描边（淡出之后消失），所以不会出现“空气上飘着一个方框”。用 `/setblock` 或别的模组把方块换成空气的情况，客户端发现方块没了也会自己收掉
-- 方块被换成**别的方块**时描边会保留，因为记录里只存了坐标：想跟着方块一起消失，就在替换方块的那段代码里顺手 `clear` 一下
 
 ## 方块扫描高亮（Java 调用）
 
@@ -577,14 +539,6 @@ BlockScanOutline.stop(level);
 
 这些表都跟着扫描配置一起存档、一起同步给客户端，所以服务端调用也能让所有人看到同样的配色。
 
-### 几点说明
-
-- 客户端调用立刻生效（扫描只是“看”的效果）；服务端调用会写进该维度存档并同步给这个维度里的所有玩家，所以玩家退出重进、换维度回来扫描还在。示例里用哪种都可以，看你需不需要让所有人看到
-- 扫描每 10 tick 重扫一次，玩家走出 4 格之外也会立刻重扫，所以挖掉矿之后高亮会自己消失
-- 默认模式是 `WIRE`：每个方块十二条 `DEBUG_LINES` 细线，穿透方块，和探矿类模组看到的一样；想换成发光那种光晕就自己传 `BlockOutline.Mode.GLOW`
-- 半径越大扫得越多，48 格是上限；一次扫描 32×32×32 大约几万个方块，对帧率影响可以忽略，因为不画的时候完全不扫
-- 测试入口：游戏里按 `J`，开关周围所有矿石的扫描（线框、穿透方块、半径 16 格，每种矿用自己的颜色）
-
 ## 实体扫描高亮（Java 调用）
 
 `EntityScanOutline` 和方块扫描是一对：方块扫描找方块，它找实体——扫描玩家周围符合条件（实体类型或实体标签）的实体，把每个实体的碰撞箱画成一圈线框。同样是“拿到之后周围目标自动亮起来”，同样只在有目标时才扫描。
@@ -645,12 +599,276 @@ EntityScanOutline.stop(level);
 - `Scan.clamped()`：把半径与线宽夹到合法范围（半径 1~64 格）。
 - 常量：`DEFAULT_RADIUS`（16 格）、`MAX_RADIUS`（64 格）。
 
-### 几点说明
+## 流体碰撞配方（数据包）
 
-- 和方块扫描一样，客户端调用立刻生效；服务端调用会写进该维度存档并同步给这个维度里的所有玩家
-- 扫描每 10 tick 重扫一次，玩家走出 4 格也会立刻重扫，所以实体走开了高亮会自己消失
-- 线框画的是实体的碰撞箱，不是模型轮廓；大型实体（比如末影龙）框会比较大
-- 测试入口：游戏里按 `L`，准星对着某个实体时开关“扫描这个实体的同类”（橙色线框）
+### 文件放在哪里
+
+放进数据包的 `data/<命名空间>/recipe/<文件名>.json`，`type` 写 `redstone_chan_lib:fluid_collision`（流体撞流体）或 `redstone_chan_lib:block_collision`（流体撞方块），改动后 `/reload` 即可生效。
+
+### 字段说明
+
+- `type`：`redstone_chan_lib:fluid_collision` 或 `redstone_chan_lib:block_collision`。
+- `fluid`：流入的流体，写 `"minecraft:lava"` 或 `"#minecraft:water"` 这样带 `#` 的标签；也可以写原版的 `{"tag": "..."}` 或流体列表。
+- `other_fluid`：被撞上的另一种流体（只有 `fluid_collision` 有），写法同上。
+- `block`：被撞上的方块（只有 `block_collision` 有），写 `"minecraft:ice"`、`"#minecraft:logs"`、一个方块 id 的列表，或原版的 `{"tag": "..."}`。
+- `results`：产出列表，至少一条。每条写 `block` 或 `item` 二选一，可带 `count`（默认 1，1~64）与 `chance`（默认 1.0，0~1）；`item` 直接写物品 id 即可，也可以写 `{"id": "...", "count": ...}`。
+  概率是**一次碰撞只出一个**：所有条目按顺序排开，掷一次 0~1 的骰子，谁的累计概率区间盖住它就只出谁，所以 50% + 25% + 25% 意味着三选一，不会同时冒出来；总和不足 100% 时剩下的概率就是“什么都不出”。
+- `delay`：触发后延迟几刻才生成，默认 1。
+- `consume_fluid`：触发后是否把流入的流体拿掉，默认 `false`。
+- `consume_other`：`fluid_collision` 专用，触发后是否把另一种流体也拿掉，默认 `false`。
+- `consume_block`：`block_collision` 专用，触发后是否把被撞的方块拿掉，默认 `false`。
+- `consume_source`：触发后是否连着把这一股流体的**源头**一起抽掉，默认 `false`；适合“岩浆倒进水池会一直冒石头”这种场景，关掉就只处理碰撞的那一格，源头还在。
+- `sound`：触发时播放的音效 id，可省略；省略时默认用“水遇岩浆熄灭”（`minecraft:block.lava.extinguish`）。
+- `fluid_below`：可选，要求流入流体**自己脚下**是某种方块，写 `"minecraft:magma_block"` 或标签都行；字段名不能叫 `fluid`，因为 `fluid` 已经被用来写碰撞的流体原料了。JEI 里这个条件槽画在左边流体那一列的下方。
+- `down`：可选，要求参与碰撞的**对方**（方块那一边）正下方是某种方块，写 `"minecraft:gold_block"` 或 `"#minecraft:base_stone_nether"` 这类标签都行。JEI 里这个条件槽画在右边方块那一列的下方。
+- `center`：可选，要求“空出来的那一格”正下方是某种方块。两种摆法都算碰撞：流体直接流到金块旁边（甚至流到金块正上方），这时空出来的那一格就是流体自己那格，`center` 看流体脚下；或者摆成 `[金块][空][岩浆]` 三格，`center` 看中间空格脚下。JEI 里这个条件槽画在中间那一列的下方。
+  三个条件写几个就要求几个同时满足，都不写就是不做下方限制；流体撞流体时同样生效（`down` 这时看另一种流体那格脚下）。
+
+### 示例：熔岩撞水变石头
+
+```json
+{
+  "type": "redstone_chan_lib:fluid_collision",
+  "fluid": "minecraft:lava",
+  "other_fluid": "minecraft:water",
+  "results": [
+    { "block": "minecraft:obsidian", "count": 1, "chance": 0.25 },
+    { "block": "minecraft:stone", "count": 1, "chance": 0.75 }
+  ],
+  "delay": 1,
+  "consume_fluid": true,
+  "consume_other": true,
+  "consume_source": true,
+  "sound": "minecraft:block.lava.extinguish"
+}
+```
+
+构造器的参数顺序是“流体、对方原料、产出、延迟、是否消耗流入流体、是否消耗对方、是否消耗流体源头、音效”；后两个可以省略，省略时音效默认是水遇岩浆熄灭。
+
+### 示例：岩浆撞金块，中间空格下方也得是金块
+
+```json
+{
+  "type": "redstone_chan_lib:block_collision",
+  "fluid": "minecraft:lava",
+  "block": "minecraft:gold_block",
+  "results": [
+    { "block": "minecraft:gold_ore", "chance": 1.0 }
+  ],
+  "center": "minecraft:gold_block",
+  "delay": 1
+}
+```
+
+摆成同一高度的三格：`金块 — 空气 — 岩浆`，并且中间那格空气的正下方也是金块；也可以直接把岩浆倒在金块上方或旁边，只要那一格脚下是金块。
+这时岩浆那一格里的流体会和左边的金块隔着空格撞上，产出金矿石；把中间的空格填掉、或者把空格下面换成石头，都不会触发。
+
+### 示例：熔岩撞冰
+
+```json
+{
+  "type": "redstone_chan_lib:block_collision",
+  "fluid": "minecraft:lava",
+  "block": "minecraft:ice",
+  "results": [
+    { "block": "minecraft:obsidian", "count": 1, "chance": 0.5 },
+    { "item": "minecraft:charcoal", "count": 2, "chance": 0.3 }
+  ],
+  "delay": 5,
+  "consume_fluid": true,
+  "consume_block": true,
+  "sound": "minecraft:block.glass.break"
+}
+```
+
+## 流体碰撞配方（Java 调用）
+
+配方类本身就是公开的 record，直接用构造器或者静态工厂拼一份，再注册进 `CollisionRecipes` 即可；注册的配方会与数据包配方一起参与匹配，也会出现在 JEI 里。
+
+下面示例用到的 import：
+
+```java
+import com.chinaex123.redstone_chan_lib.api.collision.BlockCollisionRecipe;
+import com.chinaex123.redstone_chan_lib.api.collision.CollisionOutput;
+import com.chinaex123.redstone_chan_lib.api.collision.CollisionRecipes;
+import com.chinaex123.redstone_chan_lib.api.collision.FluidCollisionRecipe;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.material.Fluids;
+import net.neoforged.neoforge.fluids.crafting.FluidIngredient;
+import java.util.List;
+import java.util.Optional;
+```
+
+### 示例：熔岩撞水
+
+```java
+CollisionRecipes.register("lava_water", new FluidCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        FluidIngredient.of(Fluids.WATER),
+        List.of(
+                CollisionOutput.block(Blocks.STONE),
+                CollisionOutput.block(Blocks.OBSIDIAN, 1, 0.25F)
+        ),
+        1, true, true, false, SoundEvents.LAVA_EXTINGUISH));
+```
+
+构造器的参数顺序是“流体、对方原料、产出、延迟、是否消耗流入流体、是否消耗对方、是否消耗流体源头、音效”；后两个可以省略，省略时音效默认是水遇岩浆熄灭。
+
+### 示例：岩浆撞金块，中间空格下方也得是金块
+
+```java
+CollisionRecipes.register("lava_gold_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.GOLD_BLOCK),
+        List.of(CollisionOutput.block(Blocks.GOLD_ORE)),
+        1, false, false, false, null,
+        BelowCondition.center(BlockCollisionRecipe.blocks(Blocks.GOLD_BLOCK))));
+```
+
+摆成同一高度的 `金块 — 空气 — 岩浆`，并且中间那格空气的正下方也是金块，那格空气里就会冒出金矿石（岩浆和金块都不动）；直接把岩浆倒在金块上方/旁边、且那格脚下是金块，同样会触发（这时中间格就是岩浆自己那格）。
+
+### 示例：岩浆撞绿宝石块，中间下方要有绿宝石块
+
+```java
+CollisionRecipes.register("lava_emerald_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.EMERALD_BLOCK),
+        List.of(CollisionOutput.block(Blocks.EMERALD_ORE)),
+        1, false, false, false, null,
+        BelowCondition.center(BlockCollisionRecipe.blocks(Blocks.EMERALD_BLOCK))));
+```
+
+摆成同一高度的 `绿宝石块 — 空气 — 岩浆`，并且中间那格空气的正下方也是绿宝石块，那格空气里就会冒出绿宝石矿石（岩浆和绿宝石块都不动）；直接把岩浆倒在绿宝石块上方/旁边、且那格脚下是绿宝石块，同样会触发。下面换成别的方块就不触发。
+
+### 示例：熔岩撞冰
+
+```java
+CollisionRecipes.register("lava_ice", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.tag(net.minecraft.tags.BlockTags.ICE),
+        List.of(
+                CollisionOutput.block(Blocks.OBSIDIAN, 1, 0.5F),
+                CollisionOutput.item(net.minecraft.world.item.Items.CHARCOAL, 2, 0.3F)
+        ),
+        5, true, true, SoundEvents.GLASS_BREAK));
+```
+
+### 示例：模组自带的六条测试配方
+
+模组在构造阶段调用了 `BuiltinCollisionRecipes.register()`，里面已经注册了六份直接用 Java 写的示例，进游戏就能试：
+
+```java
+// 熔岩碰到钻石矿石（含深板岩变种）：必定掉一颗钻石，并把矿石消耗掉
+CollisionRecipes.register("lava_diamond_ore", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.DIAMOND_ORE, Blocks.DEEPSLATE_DIAMOND_ORE),
+        List.of(CollisionOutput.item(Items.DIAMOND, 1, 1.0F)),
+        1, false, true, Optional.empty()));
+
+// 熔岩碰到钻石块：原地再放一个钻石块
+CollisionRecipes.register("lava_diamond_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.DIAMOND_BLOCK),
+        List.of(CollisionOutput.block(Blocks.DIAMOND_BLOCK)),
+        1, false, false, Optional.empty()));
+
+// 熔岩碰到远古残骸：50% 还是远古残骸，25% 下界石英矿石，25% 下界岩
+CollisionRecipes.register("lava_ancient_debris", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.ANCIENT_DEBRIS),
+        List.of(
+                CollisionOutput.block(Blocks.ANCIENT_DEBRIS, 1, 0.5F),
+                CollisionOutput.block(Blocks.NETHER_QUARTZ_ORE, 1, 0.25F),
+                CollisionOutput.block(Blocks.NETHERRACK, 1, 0.25F)),
+        1, false, true, Optional.of(SoundEvents.LAVA_EXTINGUISH)));
+
+// 熔岩碰到金块，中间那格空的下方也是金块时，才变成金矿石
+CollisionRecipes.register("lava_gold_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.GOLD_BLOCK),
+        List.of(CollisionOutput.block(Blocks.GOLD_ORE, 1, 1.0F)),
+        1, false, false, false, null,
+        BelowCondition.center(Blocks.GOLD_BLOCK)));
+
+// 熔岩碰到绿宝石块，中间那格空的下方也是绿宝石块时，才变成绿宝石矿石
+CollisionRecipes.register("lava_emerald_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.EMERALD_BLOCK),
+        List.of(CollisionOutput.block(Blocks.EMERALD_ORE, 1, 1.0F)),
+        1, false, false, false, null,
+        BelowCondition.center(Blocks.EMERALD_BLOCK)));
+
+// 熔岩碰到石头，且熔岩自己脚下是岩浆块时，才变成岩浆块
+CollisionRecipes.register("lava_stone_on_magma", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.STONE),
+        List.of(CollisionOutput.block(Blocks.MAGMA_BLOCK, 1, 1.0F)),
+        1, false, false, false, null,
+        BelowCondition.down(Blocks.MAGMA_BLOCK)));
+```
+
+不想保留这六条示例的话，把 `RedstoneChanLIB` 构造器里的 `BuiltinCollisionRecipes.register()` 删掉即可。
+
+### fluid_below / down / center 怎么写
+
+这两个条件在 Java 里是 `BelowCondition` 的工厂方法，直接写方块或标签即可，不用自己拼 `HolderSet`：
+
+```java
+// 只要求“中间那格空的下方”是绿宝石块
+BelowCondition.center(Blocks.EMERALD_BLOCK);
+
+// 只要求“流体自己脚下”是岩浆块
+BelowCondition.fluid(Blocks.MAGMA_BLOCK);
+
+// 只要求“对方（方块那一边）脚下”是铁块
+BelowCondition.down(Blocks.IRON_BLOCK);
+
+// 也可以写标签：中间那格下方是任意钻石矿石
+BelowCondition.center(BlockTags.DIAMOND_ORES);
+
+// 三处一起限制：流体脚下岩浆块、对方脚下铁块、中间格下方黑曜石
+BelowCondition.all(
+        BlockCollisionRecipe.blocks(Blocks.MAGMA_BLOCK),
+        BlockCollisionRecipe.blocks(Blocks.IRON_BLOCK),
+        BlockCollisionRecipe.blocks(Blocks.OBSIDIAN));
+```
+
+写进配方时把它当最后一个参数传进去就行：
+
+```java
+CollisionRecipes.register("lava_emerald_block", new BlockCollisionRecipe(
+        FluidIngredient.of(Fluids.LAVA),
+        BlockCollisionRecipe.blocks(Blocks.EMERALD_BLOCK),
+        List.of(CollisionOutput.block(Blocks.EMERALD_ORE)),
+        1, false, false, false, null,
+        BelowCondition.center(Blocks.EMERALD_BLOCK)));
+```
+
+三个工厂分别是 `fluid(...)`、`down(...)`、`center(...)`，要同时限制多处就写 `all(fluid, down, center)`（只写流体与对方用 `both(fluid, down)`）；不限制下方方块时传 `BelowCondition.NONE`；同样的东西写在数据包里，就是配方 JSON 顶层的 `fluid_below`、`down`、`center` 三个字段。判断是否满足用 `testFluid(BlockState)`、`testDown(BlockState)`、`testCenter(BlockState)`，全部为空用 `isEmpty()` 判断。
+
+### 可以直接调用的方法
+
+- `CollisionRecipes.register(ResourceLocation id, FluidCollisionRecipe recipe)`：注册一份流体碰撞配方。
+- `CollisionRecipes.register(String path, FluidCollisionRecipe recipe)`：同上，id 自动加 `redstone_chan_lib:` 前缀。
+- `CollisionRecipes.register(ResourceLocation id, BlockCollisionRecipe recipe)`：注册一份方块碰撞配方。
+- `CollisionRecipes.register(String path, BlockCollisionRecipe recipe)`：同上，id 自动加前缀。
+- `CollisionRecipes.javaFluidRecipes()` / `javaBlockRecipes()`：取当前注册的 Java 配方表。
+- `CollisionRecipes.onFluidPlaced(Level level, BlockPos pos, BlockState newState, BlockState oldState)`：手动喂一次“流体流入”，正常游戏里由注入自动调用。
+- `CollisionOutput.block(Block)` / `block(Block, float chance)` / `block(Block, int count, float chance)`：造一条方块产出。
+- `CollisionOutput.item(Item)` / `item(Item, int count, float chance)` / `item(ItemStack, float chance)`：造一条物品产出。
+- `BlockCollisionRecipe.blocks(Block... blocks)`：把若干方块直接包成一个方块集合，免去手写 `HolderSet.direct(...)`。
+- `BlockCollisionRecipe.tag(TagKey<Block> tag)`：把方块标签包成方块集合，标签不存在时会抛异常。
+- `BelowCondition.NONE`：不做任何下方方块限制。
+- `BelowCondition.center(Block...)` / `center(TagKey<Block>)` / `center(HolderSet<Block>)`：要求中间那格空的下方是这些方块。
+- `BelowCondition.down(Block...)` / `down(TagKey<Block>)` / `down(HolderSet<Block>)`：要求对方（方块那一边）脚下是这些方块。
+- `BelowCondition.fluid(Block...)` / `fluid(TagKey<Block>)` / `fluid(HolderSet<Block>)`：要求流体自己脚下是这些方块。
+- `BelowCondition.both(HolderSet<Block> fluid, HolderSet<Block> down)`：流体脚下与对方脚下同时限制（任一参数可以传 `null`）。
+- `BelowCondition.all(HolderSet<Block> fluid, HolderSet<Block> down, HolderSet<Block> center)`：三处一起限制（任一参数可以传 `null`）。
+- `BelowCondition.testFluid(BlockState)` / `testDown(BlockState)` / `testCenter(BlockState)` / `isEmpty()`：单独判断某个下方方块、或判断是否完全没限制。
+- 常量：`CollisionOutput.DEFAULT_COUNT`、`DEFAULT_CHANCE`、`FluidCollisionRecipe.DEFAULT_DELAY`、`TEST_AMOUNT`。
+- `BuiltinCollisionRecipes.register()`：模组自带的六条示例配方（上一条示例里的那六份），在构造阶段注册。
 
 ## 创造模式物品栏分区（Java 调用）
 
@@ -752,68 +970,3 @@ SectionedCreativeTab.builder(id)
 - `CreativeSections.byTab(CreativeModeTab)`／`byId(ResourceLocation)`：查登记信息（`Entry` 里有 id、页签、分区、默认样式）。
 - `CreativeSections.isActive(tab, index)`／`selectSection(tab, index)`／`toggleSection(tab, index)`：读/改选中状态（代码里也能主动切换）。
 - `CreativeSections.sections(tab)`／`styleOf(entry, index)`／`addItems(tab, output)`／`indices(tab)`：取分区、取实际样式、填物品、取下标。
-
-### 几点说明
-
-- 页签必须在模组构造阶段（`DeferredRegister` 注册期间）构建，`build()` 会同时把页签登记到 `CreativeSections`，界面靠这份登记来画按钮
-- 分区顺序就是按钮顺序，也是物品在创造栏里的排列顺序；按钮一列放 6 个，超过就换到左边一列
-- 未选中的分区以“只进搜索结果”注册，所以它们在创造栏里看不到，但搜索栏里能搜到，不会丢物品
-- 自带三张 24×24 的默认底图（未选中、选中、悬停），想换成自己的图就把 PNG 放进 `assets/<你的命名空间>/textures/gui/...`，路径要写全（含 `textures/` 前缀和 `.png`）
-- 悬停图是**叠在**底图之上画的，默认那张中间是透明的只留一圈高亮边，所以选中状态仍然看得出来；如果你换成一张不透明的悬停图，它会把选中底图整个盖住
-- 物品是原版物品渲染，缩放通过 `PoseStack` 做，所以 `withIconScale(0.5F)` 得到 8×8、`0.75F` 得到 12×12
-- 按钮位置是“界面左边距 - 按钮宽度 - 3”往左排，界面宽度变化时会跟着 `leftPos` 走
-
-## 实现说明
-
-传送门：
-
-- 形状判定分两步：先从被点击的框架方块旁边找一个内部空格，在传送门所在的平面里做四向洪水填充，把内部整块圈出来；再检查这块区域是完整矩形，且它外面那一圈（四条边）都是框架方块。四个角允许留空，和原版下界门一致，判定的只是四条边是否把内部封住
-- 一座门的颜色、名称、定义 id 存在每个传送门方块的方块实体里，靠方块更新包同步，所以同一套方块可以有不同颜色、不同名称、去不同维度；方块被拆掉时按连通关系整片清除
-- 传送分两步：进门时记录目标维度和目标坐标并开始倒计时，倒计时结束时再真正 `teleportTo`；倒计时期间玩家离开这整片门方块的范围就取消，避免站门口反复传送
-- 到达之后会记一份“刚到达的门方块”，短时间内不会再触发回传，避免两头来回弹
-- 目标维度的坐标会按下界比例换算（主世界与下界之间 ×/÷8），没有合适的落点就在附近找空地按定义盖一座同款门
-- 传送门方块没有碰撞箱，但注册时加了 `forceSolidOn()`、并重写了拒绝流体替换的 `canBeReplaced`，所以水流不进来、流体桶也放不进去，不会出现“水把门冲出一道口子”
-- 报错与日志走 `message.redstone_chan_lib.*` 翻译键，随语言变化，整合包可以直接覆盖这些键改写提示；内置测试门的名称也用的是翻译键
-
-生物描边：
-
-- 描边是屏幕空间的：先把模型画进一张离屏遮罩（只写剪影，不采样模型贴图，用原版描边着色器按贴图 alpha 丢弃透明像素），再把遮罩按 8 个方向的像素偏移叠回主画面，所以是贴着模型的一圈，不会出现“两层壳打架”
-- 合成时把 `RenderSystem` 的模型视图矩阵与投影矩阵都换成 2D 正交，结束再恢复；换完必须显式 `applyModelViewMatrix()`，否则着色器还是用旧矩阵，四边形会被变换到画面外
-- 遮罩贴图的环绕方式被设成“夹到边缘”：合成时是按偏移若干像素去采样遮罩的，屏幕边缘那部分会采到贴图外面，若保持默认的重复环绕就会把对边的剪影卷回来，画面上出现一圈莫名其妙的光环
-- `throughWalls` 为 `false` 时，画之前先做一次可见性检查（先查方块，再查其它生物的碰撞箱），被地形或别的生物挡住就整只不画；为 `true` 时不管挡不挡都画，和原版发光一致
-
-方块描边：
-
-- 方块描边走的是几何路线：在关卡渲染的“半透明方块之后”那一步，把方块包围盒的十二条棱各展开成一根实心的方棱柱（和机械动力的画法一致），所以粗细直接就是屏幕像素，不需要离屏缓冲
-- 方棱柱的横截面是正方形：先取棱的方向，再叉乘出一个参考轴得到横截面的两条边，两端各沿棱多伸半个线宽，所以从任何角度看都一样粗，拐角处三条棱还会叠成一个实心小方块
-- 机械动力风格的动画由两个量组成：线宽随进度从零涨到设定的最粗、透明度按立方的进度渐隐，方框始终贴在方块上原地不动；进度存在 `BlockOutlineRenderer` 的 `FADE` 表里，出现用 0.25 秒、消失用 0.4 秒（机械动力是 8 tick），中间那段保持显示的时长由 `holdSeconds` 决定
-- 方块描边同样是“设置一次就从 0 开始播”，所以重复调用 `apply` 会重新播一遍；每次写入都会记一个序号（`BlockOutline.stamp`），渲染器靠它区分“新设置了一次”和“一直没变”
-- 机械动力风格默认是“脉冲”：播完淡入、保持、淡出之后停在“已播完”状态，数据还在但不再绘制，直到下次重新设置；要一直显示就传 `keepVisible = true`
-- 方块的彩色风格和生物一样按顶点位置铺开色相：同一条棱的两端各算一次颜色，中间自动插值，所以一整圈方框上就能同时看到好几种颜色
-- 方块描边同样支持“是否穿透方块”：为 `false` 时开深度测试，被挡住的部分自然不画；为 `true` 时关深度测试，隔着墙也能看见轮廓，和机械动力那种“透视高亮”一致
-- 方块没了之后描边会自己收掉：服务端监听方块破坏与爆炸事件，把同坐标的记录删掉并同步给附近玩家；客户端渲染时还会检查一次方块是不是已经变成空气（区块没加载就先不动），所以漏网的情况也能兜住
-- 退出重进之后描边还在：描边记在维度存档里，登录、换维度时服务端会重发一遍；客户端在进入世界时会把上一份缓存清掉，清完立刻发一个 `outline_resync` 请求，让服务端再发一次，所以不会出现“刚进去有、下一帧被自己清掉”的时序问题
-
-方块扫描高亮：
-
-- 扫描在客户端做：每 10 tick（或玩家移动超过 4 格）以玩家为中心遍历一遍立方体区域，用 `state.is(block)` / `state.is(tag)` 匹配目标，把命中的坐标缓存成一张和 `BlockOutline` 一样的“坐标 → 描边”表
-- 那张表直接喂给 `BlockOutlineRenderer.renderBoxes(...)`，所以五种模式、颜色、彩色、粗细、穿透开关全部复用同一套画法，不维护第二份渲染代码
-- 线框模式用的是另一种图元：`VertexFormat.Mode.DEBUG_LINES` 手写十二条棱，坐标同样先变换到镜头空间、着色器的 ModelViewMat 清成单位矩阵，和方块描边用的是同一套坐标约定；线段天生 1 像素宽、普通 alpha 混合，所以又细又干净
-- 扫描配置和方块描边一样有服务端存档与同步：服务端调用会写进维度存档并广播给同维度玩家，玩家登录、换维度时补发；客户端调用则只影响自己
-- 游戏里按 `J`、`L` 开的扫描也是走服务端的（客户端只发一个 `scan_toggle` 请求），所以退出重进之后扫描还在；如果只在客户端直接调 `BlockScanOutline.start(...)`，那就是临时的，重进就没了
-- 逐方块、逐标签配色是在生成描边表时定的：每个命中的方块都单独算一次 `colorOf(scan, state)`，优先级是“方块表 → 标签表 → 统一颜色”，所以同一屏里煤是深灰、铁是米色、钻石是青色
-- 内置配色刻意按 NeoForge 的 `c:ores/xxx` 标签写，而不是写死方块 id：别的模组的铜矿、锡矿只要进了矿词标签就自动有颜色
-- 两张颜色表跟着扫描配置一起存档与同步（NBT 里存 id 与颜色两列，方块与标签各一组），客户端拿到的就是算好的成品表
-
-实体扫描高亮：
-
-- 扫描同样在客户端做：每 10 tick（或玩家移动超过 4 格）用 `level.getEntitiesOfClass(Entity.class, 区域, 目标判定)` 取一批实体，把它们的碰撞箱缓存下来
-- 画的时候复用 `BlockOutlineRenderer.renderWireBoxes(...)`，所以和方块线框是同一套图元、同一套坐标约定、同一套穿透开关，不额外维护渲染代码
-- 实体目标是“类型列表 + 标签列表”，判定时先跳过已死亡的实体；服务端调用会写进该维度存档并在登录、换维度时补发
-
-创造模式物品栏分区：
-
-- 分区信息在构建页签时登记到 `CreativeSections`（页签实例与 id 两套索引），`displayItems` 回调里按页签取回分区，所以页签本身不需要知道有哪些分区
-- 界面侧靠两个客户端 Mixin：一个在 `CreativeModeInventoryScreen#selectTab` 的 HEAD 位置拆掉旧按钮、按新页签重建，一个用 `@Invoker` 暴露私有的 `refreshCurrentTabContents` 供点击后刷新列表
-- 点击分区后先改选中集合，再用页签当前的显示条件重建内容（`buildContents`），最后用新列表刷新界面，所以不需要重新开界面
-- 未选中的分区通过一个包装过的 `CreativeModeTab.Output` 把物品降级成 `SEARCH_TAB_ONLY`，既不出现在列表里，也不会在搜索里丢

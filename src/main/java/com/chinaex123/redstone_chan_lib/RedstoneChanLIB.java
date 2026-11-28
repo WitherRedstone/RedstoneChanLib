@@ -1,5 +1,6 @@
 package com.chinaex123.redstone_chan_lib;
 
+import com.chinaex123.redstone_chan_lib.data.collision.BuiltinCollisionRecipes;
 import com.chinaex123.redstone_chan_lib.data.portal.BuiltinPortalDefinitions;
 import com.chinaex123.redstone_chan_lib.init.*;
 import com.mojang.logging.LogUtils;
@@ -20,8 +21,10 @@ public class RedstoneChanLIB {
         RCLParticles.register(modEventBus);
         RCLBlockEntities.register(modEventBus);
         RCLCreativeTabs.register(modEventBus);
+        RCLRecipes.register(modEventBus);
 
         BuiltinPortalDefinitions.register();
+        BuiltinCollisionRecipes.register();
     }
 
     public static ResourceLocation id(String name) {
