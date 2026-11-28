@@ -1131,3 +1131,5 @@ FluidModels.floatingBucket(provider, item); // 倒扣着往外飘，只给比空
 - `redstone_chan_lib:redstone_vapor`（红石蒸汽）：和气体共用贴图，区别是开了 `gasBurst(true)`，右键只放一团云粒子、播一声熄灭的音效，不会留下方块。
 
 两只桶都在创造模式物品栏的“流体示例”分区里。想改配色或手感，直接看 `init/RCLDemoFluids.java`，那里就是一份完整用法，改完重新构建即可。
+
+English version: [README_EN.md](README_EN.md) / [README_USAGE_EN.md](README_USAGE_EN.md).

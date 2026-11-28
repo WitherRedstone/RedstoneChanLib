@@ -1,12 +1,8 @@
 # 红石LIB（Redstone Chan Lib）
 
-一个给自己用的 Minecraft NeoForge 1.21.1 前置库，把常用功能做成能直接抄的接口，别的模组想用就写几行。
+提供了一些方便使用的代码。
 
 ## 提供的功能
-
-### 通用注册设施
-
-方块、物品、粒子等常用注册的简化写法，省掉一堆样板代码。
 
 ### 自定义传送门
 
@@ -39,3 +35,5 @@
 ## 详细用法
 
 数据包字段、Java 示例、方法清单都在 [README_USAGE.md](README_USAGE.md) 里。
+
+English version: [README_EN.md](README_EN.md) / [README_USAGE_EN.md](README_USAGE_EN.md).
