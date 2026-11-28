@@ -66,5 +66,12 @@
   "jei.redstone_chan_lib.below_down": "对方（右边那格）下方需要是这个方块",
   "jei.redstone_chan_lib.below_center": "中间空格下方需要是这个方块（产出也落在这格里）",
   "message.redstone_chan_lib.collision_unknown_fluid": "未知的流体 %s",
-  "message.redstone_chan_lib.collision_unknown_item": "未知的物品 %s"
+  "message.redstone_chan_lib.collision_unknown_item": "未知的物品 %s",
+  "block.redstone_chan_lib.liquid_redstone": "液态红石",
+  "block.redstone_chan_lib.redstone_gas": "红石气体",
+  "item.redstone_chan_lib.liquid_redstone_bucket": "液态红石桶",
+  "item.redstone_chan_lib.redstone_gas_bucket": "红石气体桶",
+  "creative_tab.redstone_chan_lib.fluids": "流体示例",
+  "block.redstone_chan_lib.redstone_vapor": "红石蒸汽",
+  "item.redstone_chan_lib.redstone_vapor_bucket": "红石蒸汽桶"
 }

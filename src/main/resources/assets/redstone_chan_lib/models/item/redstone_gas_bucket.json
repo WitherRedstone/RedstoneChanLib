@@ -1,0 +1,7 @@
+{
+  "loader": "neoforge:fluid_container",
+  "parent": "neoforge:item/bucket",
+  "fluid": "redstone_chan_lib:redstone_gas",
+  "flip_gas": true,
+  "cover_is_mask": true
+}

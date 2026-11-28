@@ -970,3 +970,164 @@ SectionedCreativeTab.builder(id)
 - `CreativeSections.byTab(CreativeModeTab)`／`byId(ResourceLocation)`：查登记信息（`Entry` 里有 id、页签、分区、默认样式）。
 - `CreativeSections.isActive(tab, index)`／`selectSection(tab, index)`／`toggleSection(tab, index)`：读/改选中状态（代码里也能主动切换）。
 - `CreativeSections.sections(tab)`／`styleOf(entry, index)`／`addItems(tab, output)`／`indices(tab)`：取分区、取实际样式、填物品、取下标。
+
+## 流体与气体注册（Java 调用）
+
+想加一种流体，不用自己写流体类、流体方块、桶物品，调一次注册器就够了。
+
+### 快速开始
+
+在模组构造器里创建一个注册器，之后想注册什么就 `register` 什么：
+
+```java
+FluidRegistrar registrar = FluidRegistrar.create("mymod", modEventBus);
+
+FluidEntry mana = registrar.register(FluidDefinition.builder("liquid_mana")
+        .textures(
+                ResourceLocation.fromNamespaceAndPath("mymod", "block/liquid_mana_still"),
+                ResourceLocation.fromNamespaceAndPath("mymod", "block/liquid_mana_flow"))
+        .tintColor(0xFF3080FF)
+        .fogColor(0x3080FF)
+        .fogDistance(24.0F)
+        .density(1200)
+        .viscosity(800)
+        .temperature(280)
+        .canExtinguish(true)
+        .build());
+```
+
+这一下注册出来的东西是：流体类型（`mymod:liquid_mana`）、源流体（`mymod:liquid_mana`）、流动流体（`mymod:flowing_liquid_mana`）、流体方块（`mymod:liquid_mana`）和桶（`mymod:liquid_mana_bucket`）。
+
+### 气体示例
+
+把种类改成 `GAS`，密度给负数，它就会往上飘，并且过一段时间自己散掉：
+
+```java
+FluidEntry gas = registrar.register(FluidDefinition.builder("rising_gas")
+        .kind(FluidKind.GAS)
+                .density(-1000)
+                .tintColor(0x60FFFFFF)
+                .fogColor(0xC9E4F7)
+                .fogDistance(2.0F)
+                .tickRate(10)
+                .gasDissipateTicks(100)
+                .build());
+```
+
+气体的方块会给实体一个上半格的碰撞面，所以能站在气体表面；`gasDissipateTicks` 是它消失前能活多少刻（20 刻是一秒），上面还被堵着的话会每二十刻再等一次。
+
+气体的高度与形状也是上下颠倒的：下面还是同一团气体时按满格算，形状从方块顶部往下长（满格时直接占满整格），往四周铺开时找的是上方还有没有出口，而不是原版那种往下找坑。
+
+画面上的画法也跟着翻了：原版液体渲染器永远把流体画在方块下半部分，气体这块用 `client/fluid/GasFluidRenderer` 接过来自己画，贴着方块顶部往下长，看得见的那一面朝下，所以气泡是从天花板一路往下压、下面边缘是毛的。这一块是靠 `mixin/client/LiquidBlockRendererMixin` 在 `tesselate` 的 HEAD 处拦下来做的，只对 `RCLGasFluid` 生效，别的流体还是原版那套。
+
+### 气体桶的两种倒法
+
+默认的气体桶和普通桶一样，右键会把气体方块放出来。想让气体“一倒就散”，加 `gasBurst(true)`：
+
+```java
+FluidEntry vapor = registrar.register(FluidDefinition.builder("hot_vapor")
+        .kind(FluidKind.GAS)
+        .density(-400)
+        .gasBurst(true)
+        .build());
+```
+
+开了之后右键不会放下方块，只会在视线落点放一团云粒子、播一声熄灭的音效，桶变回空桶，看起来就像气体当场散掉了。旁观者、生存创造都一样处理，创造模式不会消耗桶。不写这个开关就是默认的“能倒出气体方块”。
+
+### 一次注册多个
+
+```java
+registrar.register(
+        FluidDefinition.builder("deep_water").translucent(true).blockLightLevel(3).build(),
+        FluidDefinition.builder("hot_air").kind(FluidKind.GAS).density(-800).createBucket(false).build());
+```
+
+### 能设哪些参数
+
+外观与客户端表现：
+
+- `textures(still, flowing)`：静止贴图与流动贴图，默认就是原版水的 `block/water_still` 与 `block/water_flow`，所以完全可以不准备贴图，靠 `tintColor` 染色就行；想自己画再调这个
+- `stillTexture`、`flowingTexture`：单独设其中一张
+- `tintColor(argb)`：流体着色，带透明度，默认 `0xFFFFFFFF` 不变色
+- `fogColor(rgb)`：进入流体时的雾气颜色，不带透明度
+- `fogDistance(float)`：雾气最远距离，越小越糊，默认 96
+- `fogEnabled(boolean)`：关掉就没有雾
+- `translucent(boolean)`：用半透明还是实心渲染层，默认半透明
+- `lightLevel(int)`、`blockLightLevel(int)`：流体类型与流体方块的发光等级
+
+物理与行为：
+
+- `density(int)`：密度，负数往上浮，默认 1000
+- `viscosity(int)`：粘稠度，越大流得越慢
+- `temperature(int)`：温度
+- `fallDistanceModifier(float)`：摔落距离修正
+- `motionScale(double)`：实体在里面的运动速度缩放
+- `canHydrate`、`canConvertToSource`、`supportsBoating`、`canExtinguish`、`canPushEntity`、`canDrown`、`canSwim`：对应原版流体类型的各项开关
+
+流动与爆炸：
+
+- `slopeFindDistance(int)`：找斜坡的距离，默认 4
+- `levelDecreasePerBlock(int)`：每格等级衰减，默认 1
+- `tickRate(int)`：更新刻率，越小流得越快，默认 5
+- `explosionResistance(float)`：爆炸抗性，默认 100
+
+气体专用：
+
+- `gasDissipateTicks(int)`：消散前存在的刻数，默认 200
+- `gasBurst(boolean)`：气体桶右键时直接散成粒子、不放出气体方块，默认 false（照常倒出方块）
+
+其它：
+
+- `createBucket(boolean)`：要不要同时注册桶，默认要
+- `translationKey(String)`：翻译键，默认是 `block.命名空间.注册名`
+
+### 拿到手之后
+
+`register` 返回一个 `FluidEntry`，需要什么从里面取：
+
+- `id()`：完整注册名
+- `definition()`：当初传进去的描述
+- `type()`、`fluidType()`：流体类型
+- `source()`、`sourceFluid()`：源流体
+- `flowing()`、`flowingFluid()`：流动流体
+- `block()`、`fluidBlock()`：流体方块
+- `bucket()`、`bucketItem()`：桶物品，没注册桶时 `bucket()` 是 null
+
+注册器本身还有 `entries()` 和 `namespace()`。
+
+### 资源文件：两种路子
+
+贴图有两条路，挑一条就行。
+
+**第一种，什么都不准备**：不写 `textures(...)`，流体就用原版水的静止与流动贴图，颜色由 `tintColor` 乘出来（水贴图本身是灰度的，染成什么色就是什么色）。雾气和发光照样生效。示例里的液态红石走的就是这条路。
+
+**第二种，自己画贴图**：把两张灰度图放到 `assets/命名空间/textures/block/` 下面，再用 `textures(静止图, 流动图)` 指过去，静态图一般 16×16，流动图按原版习惯是 16×16 竖向多帧。示例里的红石气体走的就是这条路。
+
+不管走哪条，下面这些还是要补：
+
+- 流体方块不需要 blockstate 文件，原版靠流体渲染器画
+- 桶物品需要一个模型，父模型二选一：想让它像原版水桶那样把流体装在桶里，用 `neoforge:item/bucket`；想让桶沿挂着流体，用 `neoforge:item/bucket_drip`（液体类的桶一般用这个），再让流体着色模型接管颜色
+- 模型里的 `flip_gas` 是“桶要不要倒扣着拿”的开关：只有流体比空气轻（密度小于 0）并且写了 `true`，NeoForge 才会把整个模型转 180 度；液体桶写 `false`，气体桶写 `true`，看起来就是气体把桶往上顶、只能倒着拎
+- 语言文件里补 `block.命名空间.注册名` 和 `item.命名空间.注册名_bucket`
+
+用数据生成的话，桶的模型可以用现成的小工具：
+
+```java
+FluidModels.bucket(provider, item);         // 流体装在桶里
+FluidModels.dripBucket(provider, item);     // 桶沿挂着流体，液体类的桶用这个
+FluidModels.floatingBucket(provider, item); // 倒扣着往外飘，只给比空气轻的流体
+```
+
+### 关于访问转换器
+
+气体要复用原版流体的扩散逻辑，而原版把几个方法写成了私有，所以库里带了一份 `META-INF/accesstransformer.cfg`，把那几个方法放宽到 `protected`。这份文件会跟着模组一起加载，对别的模组没有影响，只是让它们也能重写这几个方法。
+
+### 自带示例
+
+库本身注册了两份示例流体，装进游戏就能直接看效果：
+
+- `redstone_chan_lib:liquid_redstone`（液态红石）：没带自己的贴图，直接用原版水的贴图染红，发光的红色稠液体，流动慢、流得近，泡在里面会有暗红的雾气。这只桶用的是滴落模型，桶沿挂着流体。
+- `redstone_chan_lib:redstone_gas`（红石气体）：自带两张灰度贴图，通过 `textures(...)` 指过去，半透明，密度是负的，会一路往天上飘，飘一会儿自己散掉，贴进去画面会被淡红的雾包住。这只桶是普通气体桶，右键会倒出气体方块。
+- `redstone_chan_lib:redstone_vapor`（红石蒸汽）：和气体共用贴图，区别是开了 `gasBurst(true)`，右键只放一团云粒子、播一声熄灭的音效，不会留下方块。
+
+两只桶都在创造模式物品栏的“流体示例”分区里。想改配色或手感，直接看 `init/RCLDemoFluids.java`，那里就是一份完整用法，改完重新构建即可。

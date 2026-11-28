@@ -7,7 +7,8 @@
   ],
   "client": [
     "client.CreativeModeInventoryScreenInvoker",
-    "client.CreativeModeInventoryScreenMixin"
+    "client.CreativeModeInventoryScreenMixin",
+    "client.LiquidBlockRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

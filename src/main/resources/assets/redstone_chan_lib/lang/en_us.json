@@ -66,5 +66,12 @@
   "jei.redstone_chan_lib.below_down": "Requires this block under the other side",
   "jei.redstone_chan_lib.below_center": "Requires this block under the middle gap (output lands there too)",
   "message.redstone_chan_lib.collision_unknown_fluid": "Unknown fluid %s",
-  "message.redstone_chan_lib.collision_unknown_item": "Unknown item %s"
+  "message.redstone_chan_lib.collision_unknown_item": "Unknown item %s",
+  "block.redstone_chan_lib.liquid_redstone": "Liquid Redstone",
+  "block.redstone_chan_lib.redstone_gas": "Redstone Gas",
+  "item.redstone_chan_lib.liquid_redstone_bucket": "Liquid Redstone Bucket",
+  "item.redstone_chan_lib.redstone_gas_bucket": "Redstone Gas Bucket",
+  "creative_tab.redstone_chan_lib.fluids": "Fluid Samples",
+  "block.redstone_chan_lib.redstone_vapor": "Redstone Vapor",
+  "item.redstone_chan_lib.redstone_vapor_bucket": "Redstone Vapor Bucket"
 }

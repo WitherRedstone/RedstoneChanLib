@@ -14,11 +14,6 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/**
- * 本模组的创造模式页签。
- * <p>这里同时也是 {@link SectionedCreativeTab} 的用法示例：用原版物品摆出三个分区，
- * 方便直接在游戏里看分区按钮的切换与 Shift 多选效果。</p>
- */
 public interface RCLCreativeTabs {
     DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, RedstoneChanLIB.MODID);
 
@@ -49,6 +44,15 @@ public interface RCLCreativeTabs {
                     output -> {
                         output.accept(Blocks.STONE);
                         output.accept(Blocks.BRICKS);
+                    }))
+            // 流体示例：液态红石桶、红石气体桶
+            .section(CreativeSection.of(
+                    Component.translatable("creative_tab." + RedstoneChanLIB.MODID + ".fluids"),
+                    () -> new ItemStack(RCLDemoFluids.LIQUID_REDSTONE.bucketItem()),
+                    output -> {
+                        output.accept(RCLDemoFluids.LIQUID_REDSTONE.bucketItem());
+                        output.accept(RCLDemoFluids.REDSTONE_GAS.bucketItem());
+                        output.accept(RCLDemoFluids.REDSTONE_VAPOR.bucketItem());
                     }))
             .build();
 

@@ -20,6 +20,7 @@ public class RedstoneChanLIB {
         RCLItems.register(modEventBus);
         RCLParticles.register(modEventBus);
         RCLBlockEntities.register(modEventBus);
+        RCLDemoFluids.register(modEventBus);
         RCLCreativeTabs.register(modEventBus);
         RCLRecipes.register(modEventBus);
 
